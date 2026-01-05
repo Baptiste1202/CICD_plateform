@@ -152,6 +152,23 @@
           "debug": "Debug"
         }
       },
+      "builds": "Builds",
+      "create_build": "Create Build",
+      "builds_page": {
+        "project_name": "Project Name",
+        "status": "Status",
+        "image": "Image",
+        "created_at": "Created At",
+        "actions": "Actions",
+        "restart": "Restart",
+        "status_pending": "Pending",
+        "status_running": "Running",
+        "status_success": "Success",
+        "status_failed": "Failed",
+        "create_build": "Create Build",
+        "create_build_description": "Enter the details for the new build.",
+        "create": "Create"
+      },
       "users_page": {
         "user": "User",
         "username": "Username",

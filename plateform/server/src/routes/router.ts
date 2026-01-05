@@ -5,6 +5,7 @@ import { authRouter } from "./authenticationRoutes.js";
 import { configRouter } from "./configRoutes.js";
 import { logRouter } from "./logsRoutes.js";
 import { uploadRouter } from "./uploadRoutes.js";
+import { buildRouter } from "./buildRoutes.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -18,6 +19,7 @@ router.use("/api/users", userRouter); // User-related routes
 router.use("/api/auth", authRouter); // Authentication routes
 router.use("/api/logs", logRouter); // Logging routes
 router.use("/api/config", configRouter); // Config routes
+router.use("/api/builds", buildRouter); // Build routes
 
 // // UPLOADS routes
 router.use("/api/uploads", uploadRouter); // File upload routes

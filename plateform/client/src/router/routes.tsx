@@ -12,6 +12,7 @@ import { Login } from "@/pages/Authentication/login";
 import { Register } from "@/pages/Authentication/register";
 import { Config } from "@/pages/Admin/components/config";
 import { RegisterGoogleForm } from "@/pages/Authentication/registerGoogleForm";
+import { Builds } from "@/pages/Admin/components/builds";
 
 export const Router = () => {
   return (
@@ -55,6 +56,7 @@ export const Router = () => {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="users" element={<Users />} />
           <Route path="logs" element={<Logs />} />
+          <Route path="builds" element={<Builds />} />
           <Route path="settings" element={<Config />} />
         </Route>
       </Route>
