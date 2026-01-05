@@ -1,0 +1,6 @@
+[submodule "metier-back"]
+	path = metier-back
+	url = https://github.com/Baptiste1202/CICD-back
+[submodule "metier-front"]
+	path = metier-front
+	url = https://github.com/Baptiste1202/CICD-front
