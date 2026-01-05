@@ -19,7 +19,7 @@ app.use('/api/auth', authRoutes);
 // Route protégée : Seul l'ADMIN peut déployer 
 app.post(
   '/api/deploy', 
-  verifyToken,      // 1. Est-ce un utilisateur Firebase valide ?
+  verifyToken(),      // 1. Est-ce un utilisateur Firebase valide ?
   authorize(['ADMIN']),     // 2. Est-ce un ADMIN dans ma base MongoDB ?
   (req, res) => {
     res.send("Déploiement lancé...");
