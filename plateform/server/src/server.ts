@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 import User from './models/User.js'; 
 import { authorize } from './middlewares/authMiddleware.js';
 import authRoutes from './routes/auth.js';
-import { verifyFirebaseToken } from './middlewares/verifyToken.js';
+import { verifyToken } from './middlewares/verifyToken.js';
 
 /**
  * 1. Configuration des Routes
@@ -19,7 +19,7 @@ app.use('/api/auth', authRoutes);
 // Route protégée : Seul l'ADMIN peut déployer 
 app.post(
   '/api/deploy', 
-  verifyFirebaseToken,      // 1. Est-ce un utilisateur Firebase valide ?
+  verifyToken,      // 1. Est-ce un utilisateur Firebase valide ?
   authorize(['ADMIN']),     // 2. Est-ce un ADMIN dans ma base MongoDB ?
   (req, res) => {
     res.send("Déploiement lancé...");
@@ -37,14 +37,14 @@ app.get('/api/status', authorize(['ADMIN', 'VIEWER']), (req, res) => {
 export async function initServer() {
   try {
     // Vérification de l'environnement
-    if (!process.env.PORT || !process.env.MONGO_URI) {
-      console.error("ERREUR: PORT ou MONGO_URI manquant dans le fichier .env");
+    if (!process.env.PORT || !process.env.MONG_URI) {
+      console.error("ERREUR: PORT ou MONG_URI manquant dans le fichier .env");
       process.exit(1);
     }
 
     // Connexion à MongoDB Atlas
     // On utilise votre fonction existante ou mongoose directement
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONG_URI);
     console.log("✅ Connecté à MongoDB Atlas");
 
     // Création du serveur HTTP
