@@ -30,7 +30,14 @@ app.post(
 app.get('/api/status', authorize(['ADMIN', 'VIEWER']), (req, res) => {
     res.json({ status: "En cours" });
 });
-
+app.get(
+    '/api/status',
+    verifyToken(),
+    authorize(['ADMIN', 'VIEWER']),
+    (req, res) => {
+      res.json({ status: "En cours" });
+    }
+);
 /**
  * 2. Initialisation du serveur
  */
