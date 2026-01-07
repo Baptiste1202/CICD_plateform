@@ -10,6 +10,7 @@ import { Dashboard } from "@/pages/Admin/components/dashboard";
 import { Login } from "@/pages/Authentication/login";
 import { Config } from "@/pages/Admin/components/config";
 import { Builds } from "@/pages/Admin/components/builds";
+import { PipelineViewPage } from "@/pages/PipelineViewPage";
 
 export const Router = () => {
     return (
@@ -28,6 +29,7 @@ export const Router = () => {
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="users" element={<Users />} />
                     <Route path="logs" element={<Logs />} />
+                    <Route path="pipeline/:id" element={<PipelineViewPage />} />
                     <Route path="builds" element={<Builds />} />
                     <Route path="settings" element={<Config />} />
                 </Route>

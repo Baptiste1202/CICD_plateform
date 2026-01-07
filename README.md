@@ -8,6 +8,8 @@ Ouvrez le terminal de votre machine virtuelle Ubuntu et exécutez les commandes 
 
 Installer OpenSSH : sudo apt update && sudo apt install openssh-server.
 
+entrer la commande : sudo systemctl start ssh
+
 Vérifier le statut : sudo systemctl status ssh. Le statut doit être "active (running)".
 
 Ouvrir le pare-feu : sudo ufw allow ssh ou sudo ufw allow 22/tcp pour autoriser les connexions entrantes.
@@ -30,9 +32,9 @@ Pour automatiser le déploiement sans taper de mot de passe à chaque fois, util
 
 Générer une clé sur votre machine hôte : ssh-keygen -t rsa -b 4096.
 
-Copier la clé sur la VM : ssh-copy-id -p 2222 user@127.0.0.1 (en remplaçant par votre utilisateur et le port choisi).
+Copier la clé sur la VM : ssh-copy-id -i ~/.ssh/id_rsa.pub utilisateur@ipVM (en remplaçant par votre utilisateur et le port choisi).
 
-Tester : ssh -p 2222 user@127.0.0.1. Vous devriez être connecté sans mot de passe.
+Tester : ssh user@ipVM. Vous devriez être connecté sans mot de passe.
 
 
 # Modification Application CI/CD
