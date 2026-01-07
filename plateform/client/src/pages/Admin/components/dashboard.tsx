@@ -88,9 +88,6 @@ export const Dashboard = () => {
 
             <div className="flex-1 min-h-0 border-t-2 border-border pt-4 flex flex-col overflow-hidden">
                 <div className="mb-2 shrink-0">
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                        Live Pipeline Monitor
-                    </h2>
                 </div>
                 <div className="flex-1 min-h-0 pb-2">
                     <PipelineView />

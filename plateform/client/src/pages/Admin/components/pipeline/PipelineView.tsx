@@ -23,21 +23,18 @@ export const PipelineView = () => {
 
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    // Auto-scroll de la console
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [logs]);
 
-    // Écoute des logs réels du serveur (Logique intégrée de ton collègue)
     useEffect(() => {
         if (!socket) return;
 
         const handleLog = (data: string) => {
             setLogs((prev) => [...prev, data]);
 
-            // Mise à jour intelligente des étapes basée sur le contenu des logs
             if (data.includes("git pull")) setCurrentStepIndex(0);
             if (data.includes("submodule")) setCurrentStepIndex(1);
             if (data.includes("docker-compose")) setCurrentStepIndex(2);
@@ -54,7 +51,6 @@ export const PipelineView = () => {
         };
     }, [socket]);
 
-    // Fonction de déploiement réelle
     async function startDeploy() {
         if (loading) return;
 
@@ -108,40 +104,48 @@ export const PipelineView = () => {
                 </Button>
             </CardHeader>
 
-            <CardContent className="p-4 flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden">
-                <div className="flex flex-col justify-center space-y-6 relative overflow-hidden">
+            <CardContent className="p-2 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+
+                <div className="p-4 md:col-span-4 flex flex-col space-y-8 ">
                     {steps.map((step, idx) => {
                         const isDone = idx < currentStepIndex || status === "success";
                         const isCurrent = idx === currentStepIndex && status !== "success";
                         return (
                             <div key={step.id} className="flex items-center gap-4 relative">
                                 {idx !== steps.length - 1 && (
-                                    <div className={cn("absolute left-[13px] top-8 w-[1px] h-6 transition-colors duration-500", isDone ? "bg-black" : "bg-muted")} />
+                                    <div className={cn("absolute left-[13px] top-8 w-[1px] h-8 transition-colors duration-500", isDone ? "bg-black" : "bg-muted")} />
                                 )}
                                 <div className={cn("w-7 h-7 rounded-full flex items-center justify-center border-2 text-[10px] transition-all duration-500 z-10 bg-background",
                                     isDone ? "bg-black border-black text-white" : isCurrent ? "border-black animate-pulse" : "border-muted text-muted")}>
-                                    {isDone ? <CheckCircle className="w-3.5 h-3.5" /> : idx + 1}
+                                    {isDone ? <CheckCircle className="w-4 h-4" /> : idx + 1}
                                 </div>
-                                <span className={cn("text-[10px] font-black uppercase tracking-widest leading-none", isCurrent || isDone ? "text-foreground" : "text-muted-foreground/40")}>
-                                    {step.label}
-                                </span>
+                                <span className={cn("text-[11px] font-black uppercase tracking-widest", isCurrent || isDone ? "text-foreground" : "text-muted-foreground/40")}>
+                        {step.label}
+                    </span>
                             </div>
                         );
                     })}
                 </div>
 
-                <div className="flex flex-col h-full min-h-0 overflow-hidden">
-                    <span className="text-[8px] font-black uppercase mb-2 opacity-50 italic shrink-0">Live Terminal Output</span>
+                <div className="md:col-span-8 flex flex-col min-w-0">
+                    <span className="text-[8px] font-black uppercase mb-2 opacity-50 italic shrink-0">
+                        Live Terminal Output
+                    </span>
                     <div
                         ref={scrollRef}
-                        className="flex-1 min-h-0 bg-black text-green-400 p-4 rounded-xl font-mono text-[10px] overflow-y-auto border-2 border-border whitespace-pre-wrap leading-relaxed shadow-inner scrollbar-thin scrollbar-thumb-white/20"
+                        className={cn(
+                            "h-[300px] bg-black text-green-400 p-5 rounded-xl font-mono text-[10px]",
+                            "overflow-y-auto overflow-x-hidden border-2 border-border shadow-2xl",
+                            "leading-relaxed whitespace-pre-wrap scrollbar-thin scrollbar-thumb-white/20"
+                        )}
                     >
                         {logs.map((log, i) => (
-                            <div key={i} className="mb-1 border-l border-white/10 pl-3">
+                            <div key={i} className="mb-1 border-l border-white/10 pl-3 break-words">
                                 {log}
                             </div>
                         ))}
                         {loading && <div className="animate-pulse text-white mt-1">_</div>}
+                        <div className="h-2" />
                     </div>
                 </div>
             </CardContent>
