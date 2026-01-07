@@ -1,11 +1,17 @@
-import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthContext } from "@/contexts/authContext";
 
 export const Home = () => {
-  const { t } = useTranslation();
+    const { authUser } = useAuthContext();
+    const navigate = useNavigate();
 
-  return (
-    <div>
-      <h1>{t("pages.home.welcome_message")}</h1>
-    </div>
-  );
+    useEffect(() => {
+        if (authUser) {
+            const target = authUser.role === "admin" ? "/admin/dashboard" : "/pipelines";
+            navigate(target);
+        }
+    }, [authUser, navigate]);
+
+    return null;
 };
