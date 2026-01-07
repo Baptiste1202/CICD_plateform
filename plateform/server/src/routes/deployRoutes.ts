@@ -30,12 +30,9 @@ function runCommand(command: string, args: string[], cwd: string, callback: (err
 }
 
 deployRoutes.post("/", verifyToken({ role: "admin" }), (req, res) => {
-  // CORRECTION DU CHEMIN :
-  // On remonte depuis src/routes (3 niveaux) pour sortir de CICD_plateform
   const appMetierRoot = path.resolve(__dirname, "../../../../Application_metier");
   const cicdRunDir = path.join(appMetierRoot, "CICD-run");
 
-  // Debug pour vérifier dans ta console Nodemon
   console.log("--- DEBUG DEPLOIEMENT ---");
   console.log("Chemin absolu calculé :", appMetierRoot);
   console.log("Le dossier existe-t-il ? :", fs.existsSync(appMetierRoot));
@@ -59,7 +56,6 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), (req, res) => {
     },
     {
       folder: cicdRunDir,
-      // MODIFICATION POUR MAC : On retire "cmd /c" qui est pour Windows
       cmd: "docker-compose",
       args: ["up", "-d", "--build"]
     },
