@@ -7,3 +7,9 @@
 [submodule "Application_metier/CICD-run"]
 	path = Application_metier/CICD-run
 	url = https://github.com/Baptiste1202/CICD-run.git
+[submodule "Application_metier/CICD-back"]
+	path = Application_metier/CICD-back
+	url = https://github.com/Baptiste1202/CICD-back.git
+[submodule "Application_metier/CICD-front"]
+	path = Application_metier/CICD-front
+	url = https://github.com/Baptiste1202/CICD-front.git
