@@ -149,6 +149,8 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), (req, res) => {
   console.log("Le dossier existe-t-il ? :", fs.existsSync(appMetierRoot));
   console.log("--------------------------");
 
+  const cicdBackDir = path.join(appMetierRoot, "CICD-back");
+
   const tasks = [
     {
       folder: appMetierRoot,
@@ -164,6 +166,11 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), (req, res) => {
       folder: appMetierRoot,
       cmd: "git",
       args: ["submodule", "update", "--init", "--recursive", "--remote"]
+    },
+    {
+      folder: cicdBackDir,
+      cmd: process.platform === "win32" ? "mvn.cmd" : "mvn",
+      args: ["test"]
     },
     {
       folder: cicdRunDir,

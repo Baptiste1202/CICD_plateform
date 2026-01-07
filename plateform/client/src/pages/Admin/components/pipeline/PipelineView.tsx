@@ -9,8 +9,9 @@ import { cn } from "@/lib/utils";
 
 const steps = [
     { id: 'git', label: 'GIT PULL & SUBMODULES' },
+    { id: 'tests', label: 'UNIT TESTS (MAVEN)' },
     { id: 'maven', label: 'BUILD SERVICES' },
-    { id: 'docker', label: 'DOCKER COMPOSE UP' },
+    { id: 'docker', label: 'DEPLOYEMENT ON SERVER' },
     { id: 'ssh', label: 'FINALISATION' }
 ];
 
@@ -36,8 +37,10 @@ export const PipelineView = () => {
             setLogs((prev) => [...prev, data]);
 
             if (data.includes("git pull")) setCurrentStepIndex(0);
-            if (data.includes("submodule")) setCurrentStepIndex(1);
-            if (data.includes("docker-compose")) setCurrentStepIndex(2);
+            if (data.includes("mvn test") || data.includes("Tests run:")) setCurrentStepIndex(1);
+            if (data.includes("docker-compose") && data.includes("build")) setCurrentStepIndex(3);
+            if (data.includes("docker save")) setCurrentStepIndex(3);
+            if (data.includes("docker compose") && data.includes("up")) setCurrentStepIndex(4);
             if (data.includes("succès")) {
                 setCurrentStepIndex(steps.length);
                 setStatus("success");
