@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { axiosConfig } from "@/config/axiosConfig";
 import { toast } from "sonner";
@@ -12,10 +11,11 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useTranslation } from "react-i18next";
 import { Loading } from "@/components/customs/loading";
 import ColorPicker from "@/components/customs/forms/colorPicker";
+import { cn } from "@/lib/utils";
 
 const configurationFormSchema = z.object({
-  APP_NAME: z.string().trim(),
-  ACCENT_COLOR: z.string().trim(),
+    APP_NAME: z.string().trim(),
+    ACCENT_COLOR: z.string().trim(),
 });
 
 type ConfigurationFormValues = z.infer<typeof configurationFormSchema>;
@@ -39,7 +39,7 @@ export const Config = () => {
             setIsLoading(false);
         };
         fetchConfigValues();
-    }, [getConfigValue]);
+    }, [getConfigValue, form]);
 
     const onSubmit = async (values: ConfigurationFormValues) => {
         const finalValues = { ...values, APP_NAME: configValues.APP_NAME };
@@ -60,30 +60,48 @@ export const Config = () => {
     if (isLoading) return <Loading />;
 
     return (
-        <div className="container px-4 mx-auto">
-            <Card className="p-6 shadow-lg">
-                <CardTitle className="mb-2 text-2xl font-semibold">{t("pages.admin.config_page.title")}</CardTitle>
-                <CardDescription className="mb-6">{t("pages.admin.config_page.description")}</CardDescription>
+        <div className="container px-4 mx-auto py-8">
+            <Card className="p-8 rounded-2xl border-2 border-border bg-card shadow-none">
+                <div className="mb-8 border-b-2 border-border pb-6">
+                    <CardTitle className="text-3xl font-black uppercase tracking-tight">
+                        {t("pages.admin.config_page.title")}
+                    </CardTitle>
+                    <CardDescription className="mt-2 text-muted-foreground font-medium">
+                        {t("pages.admin.config_page.description")}
+                    </CardDescription>
+                </div>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                        {/* LE CHAMP APP_NAME A ÉTÉ RETIRÉ D'ICI */}
-
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
                         <FormField
                             control={form.control}
                             name="ACCENT_COLOR"
                             render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>{t("pages.admin.config_page.accent_color")}</FormLabel>
+                                <FormItem className="space-y-4">
+                                    <FormLabel className="text-sm font-black uppercase tracking-widest">
+                                        {t("pages.admin.config_page.accent_color")}
+                                    </FormLabel>
                                     <FormControl>
-                                        <ColorPicker {...field} />
+                                        <div className="p-4 border-2 border-dashed border-border rounded-xl bg-muted/20">
+                                            <ColorPicker {...field} />
+                                        </div>
                                     </FormControl>
-                                    <FormDescription>{t("pages.admin.config_page.accent_color_description")}</FormDescription>
-                                    <FormMessage />
+                                    <FormDescription className="text-xs font-medium italic">
+                                        {t("pages.admin.config_page.accent_color_description")}
+                                    </FormDescription>
+                                    <FormMessage className="font-bold" />
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit">{t("global.buttons.save")}</Button>
+
+                        <div className="pt-4">
+                            <Button
+                                type="submit"
+                                className="w-full sm:w-auto h-12 px-10 rounded-md bg-foreground text-background hover:opacity-90 font-bold uppercase tracking-widest transition-all active:scale-95"
+                            >
+                                {t("global.buttons.save")}
+                            </Button>
+                        </div>
                     </form>
                 </Form>
             </Card>

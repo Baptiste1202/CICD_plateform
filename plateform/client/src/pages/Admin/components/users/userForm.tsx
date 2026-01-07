@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { UserInterface } from "@/interfaces/User";
 import { useTranslation } from "react-i18next";
 import { getUpdateUserSchema, getDeleteUserSchema } from "@/lib/zod/schemas/admin/zod";
+import { cn } from "@/lib/utils";
 
 interface UserFormProps {
     dialog: (isOpen: boolean) => void;
@@ -72,15 +73,22 @@ export const UserForm = ({ dialog, refresh, action, user }: UserFormProps) => {
     if (action === "update") {
         return (
             <Form {...updateForm}>
-                <form onSubmit={updateForm.handleSubmit(onUpdateSubmit)} className="space-y-6">
+                <form onSubmit={updateForm.handleSubmit(onUpdateSubmit)} className="space-y-6 pt-4">
                     <FormField
                         control={updateForm.control}
                         name="username"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>{t("pages.admin.users_page.form.username")}</FormLabel>
-                                <FormControl><Input {...field} /></FormControl>
-                                <FormMessage />
+                                <FormLabel className="font-black uppercase tracking-widest text-[10px]">
+                                    {t("pages.admin.users_page.form.username")}
+                                </FormLabel>
+                                <FormControl>
+                                    <Input
+                                        {...field}
+                                        className="border-2 focus-visible:ring-foreground rounded-md font-mono"
+                                    />
+                                </FormControl>
+                                <FormMessage className="text-xs font-bold" />
                             </FormItem>
                         )}
                     />
@@ -89,23 +97,33 @@ export const UserForm = ({ dialog, refresh, action, user }: UserFormProps) => {
                         name="role"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>{t("pages.admin.users_page.form.role")}</FormLabel>
+                                <FormLabel className="font-black uppercase tracking-widest text-[10px]">
+                                    {t("pages.admin.users_page.form.role")}
+                                </FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectTrigger className="border-2 focus:ring-foreground font-bold">
+                                            <SelectValue />
+                                        </SelectTrigger>
                                     </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="user">{t("pages.admin.users_page.form.user")}</SelectItem>
-                                        <SelectItem value="admin">{t("pages.admin.users_page.form.admin")}</SelectItem>
+                                    <SelectContent className="border-2 border-border">
+                                        <SelectItem value="user" className="font-medium focus:bg-black focus:text-white">{t("pages.admin.users_page.form.user")}</SelectItem>
+                                        <SelectItem value="admin" className="font-medium focus:bg-black focus:text-white">{t("pages.admin.users_page.form.admin")}</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <FormDescription>Le rôle définit les permissions d'accès au dashboard.</FormDescription>
-                                <FormMessage />
+                                <FormDescription className="text-[10px] italic leading-tight">
+                                    {t("pages.admin.users_page.form.role_description") || "Le rôle définit les permissions d'accès au dashboard."}
+                                </FormDescription>
+                                <FormMessage className="text-xs font-bold" />
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" className="w-full bg-accent" disabled={loading}>
-                        {t("pages.admin.users_page.form.update")}
+                    <Button
+                        type="submit"
+                        className="w-full bg-foreground text-background hover:bg-foreground/90 font-black uppercase tracking-widest py-6 rounded-md transition-all active:scale-95"
+                        disabled={loading}
+                    >
+                        {loading ? <span className="animate-pulse">...</span> : t("pages.admin.users_page.form.update")}
                     </Button>
                 </form>
             </Form>
@@ -115,19 +133,32 @@ export const UserForm = ({ dialog, refresh, action, user }: UserFormProps) => {
     if (action === "delete") {
         return (
             <Form {...deleteForm}>
-                <form onSubmit={deleteForm.handleSubmit(onDeleteSubmit)} className="space-y-6">
+                <form onSubmit={deleteForm.handleSubmit(onDeleteSubmit)} className="space-y-6 pt-4">
                     <FormField
                         control={deleteForm.control}
                         name="confirmDelete"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-destructive">Action irréversible</FormLabel>
-                                <FormControl><Input placeholder='Tapez "delete" pour confirmer' {...field} /></FormControl>
-                                <FormMessage />
+                                <FormLabel className="font-black uppercase tracking-widest text-[10px] text-destructive">
+                                    {t("pages.admin.users_page.form.danger_zone") || "Action irréversible"}
+                                </FormLabel>
+                                <FormControl>
+                                    <Input
+                                        placeholder='Type "delete"'
+                                        {...field}
+                                        className="border-2 border-destructive/20 focus-visible:ring-destructive rounded-md font-mono"
+                                    />
+                                </FormControl>
+                                <FormMessage className="text-xs font-bold" />
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" variant="destructive" className="w-full" disabled={loading}>
+                    <Button
+                        type="submit"
+                        variant="destructive"
+                        className="w-full font-black uppercase tracking-widest py-6 rounded-md transition-all active:scale-95"
+                        disabled={loading}
+                    >
                         {t("pages.admin.users_page.form.delete")}
                     </Button>
                 </form>

@@ -229,7 +229,6 @@ export default function ColorPicker({ value = "#3B82F6", onChange, className, di
 
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-50 p-6">
-          {/* Color Preview and Hex Input */}
           <div className="flex items-center gap-2 mb-6">
             <div className="flex-1">
               <label className="block text-sm font-medium text-black dark:text-white mb-2">{t("components.colorPicker.hex_color")}</label>
@@ -252,7 +251,6 @@ export default function ColorPicker({ value = "#3B82F6", onChange, className, di
             </div>
           </div>
 
-          {/* HSL Sliders */}
           <div className="space-y-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-black dark:text-white mb-2">
@@ -314,7 +312,6 @@ export default function ColorPicker({ value = "#3B82F6", onChange, className, di
             </div>
           </div>
 
-          {/* Preset Colors */}
           <div>
             <label className="block text-sm font-medium text-black dark:text-white mb-3">
               <Palette className="w-4 h-4 inline mr-2" />

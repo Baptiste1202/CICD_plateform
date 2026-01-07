@@ -86,7 +86,6 @@ export function DataTable<TData, TValue>({
   return (
     <div className="overflow-hidden border rounded-md">
       <div className="flex flex-col p-4 gap-4 md:flex-row md:items-center md:justify-between">
-        {/* Search */}
         <div className="w-full md:flex md:flex-row md:items-center md:justify-start md:gap-4">
           <Input
             placeholder={t(`components.dataTable.filters.${searchElement}`)}
@@ -95,7 +94,6 @@ export function DataTable<TData, TValue>({
             className="w-full md:w-auto md:max-w-xs"
           />
 
-          {/* Bloc Columns + Reload en PC */}
           <div className="hidden md:flex md:items-center md:gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -123,7 +121,6 @@ export function DataTable<TData, TValue>({
           </div>
         </div>
 
-        {/* Menu toujours à droite en PC */}
         {actions.length !== 0 && (
           <div className="hidden md:flex">
             <DropdownMenu>
@@ -150,7 +147,6 @@ export function DataTable<TData, TValue>({
           </div>
         )}
 
-        {/* Mobile: Actions sous la search bar, centrées */}
         <div className="flex justify-center items-center gap-2 md:hidden flex-wrap">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

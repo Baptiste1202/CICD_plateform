@@ -3,6 +3,7 @@ import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, Sideba
 import { useLocation, useNavigate } from "react-router-dom";
 import { useConfigContext } from "@/contexts/configContext";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 export function NavMain({items,}: {
   items: {
@@ -41,29 +42,36 @@ export function NavMain({items,}: {
 
   return (
       <SidebarGroup>
-        <SidebarGroupLabel>{configValues["APP_NAME"] || "CI/CD Platform"}</SidebarGroupLabel>
-        <SidebarMenu>
-          {items.map((item) => (
-              <SidebarMenuItem key={item.url} onClick={() => handleClick(item.url)}>
-                <SidebarMenuButton
-                    tooltip={item.title}
-                    className={`cursor-pointer transition-all duration-200 ${
-                        isLinkActive(item.url)
-                            ? "bg-primary text-primary-foreground shadow-sm font-semibold"
-                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                    }`}
-                >
-                  {item.icon && (
-                      <item.icon
-                          className={`w-5 h-5 transition-transform ${
-                              isLinkActive(item.url) ? "scale-110" : ""
-                          }`}
-                      />
-                  )}
-                  <span className="ml-2">{item.title}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-          ))}
+        <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/50 mb-4 px-4 italic">
+          {configValues["APP_NAME"] || "CI/CD Platform"}
+        </SidebarGroupLabel>
+        <SidebarMenu className="gap-2 px-2">
+          {items.map((item) => {
+            const active = isLinkActive(item.url);
+            return (
+                <SidebarMenuItem key={item.url} onClick={() => handleClick(item.url)}>
+                  <SidebarMenuButton
+                      tooltip={item.title}
+                      className={cn(
+                          "cursor-pointer h-11 px-4 transition-all duration-200 uppercase tracking-widest text-[10px] font-black",
+                          active
+                              ? "bg-foreground text-background rounded-xl shadow-lg translate-x-1"
+                              : "bg-transparent text-muted-foreground rounded-xl hover:bg-muted/80 hover:text-foreground"
+                      )}
+                  >
+                    {item.icon && (
+                        <item.icon
+                            className={cn(
+                                "w-4 h-4 transition-all",
+                                active ? "scale-110 opacity-100" : "opacity-40"
+                            )}
+                        />
+                    )}
+                    <span className="ml-3 tracking-tighter">{item.title}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarGroup>
   );

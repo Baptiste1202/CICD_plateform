@@ -33,7 +33,6 @@ export function OAuth({ message }: OauthProps) {
           className="flex items-center justify-center w-full gap-3 py-6 bg-white border border-slate-200 text-slate-900 hover:bg-slate-50 transition-colors"
       >
         <Chrome className="w-5 h-5 text-blue-500" />
-        {/* CORRECTION : On enlève le + "_google" ici */}
         <span className="font-semibold">{t(message)}</span>
       </Button>
   );

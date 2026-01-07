@@ -34,7 +34,6 @@ export const LayoutWrapper = ({ withLayout = true }: LayoutWrapperProps) => {
                     </div>
                 </header>
 
-                {/* Le contenu de tes pages (Home, Account, Admin, etc.) */}
                 <main className="flex flex-1 flex-col gap-4 p-4 pt-0 overflow-y-auto">
                     <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min p-4">
                         <Outlet />

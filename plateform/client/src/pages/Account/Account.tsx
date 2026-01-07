@@ -12,7 +12,6 @@ import { getUpdateAccountSchema } from "@/lib/zod/schemas/account/zod";
 import { toast } from "sonner";
 import { axiosConfig } from "@/config/axiosConfig";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { InputFile } from "@/components/customs/forms/inputFile";
 import { Dialog } from "@/components/ui/dialog";
 import { EllipsisVertical, Trash } from "lucide-react";
 import {
@@ -38,8 +37,6 @@ export const Account = () => {
     const updateForm = useForm<z.infer<typeof updateAccountSchema>>({
         resolver: zodResolver(updateAccountSchema),
         defaultValues: {
-            name: authUser?.name || "",
-            forename: authUser?.forename || "",
             username: authUser?.username || "",
         },
     });
@@ -57,54 +54,37 @@ export const Account = () => {
         }
     };
 
-    const updateProfilePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        setUpdateLoading(true);
-        const file = e.target.files?.[0];
-
-        if (!file) return setUpdateLoading(false);
-
-        if (!file.type.includes("image")) {
-            toast.error(t("pages.account.errors.invalid_file_type"));
-            setUpdateLoading(false);
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append("avatar", file);
-
-        try {
-            const response = await axiosConfig.post(`/uploads/avatar/${authUser?._id}`, formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
-            toast.success(t(response.data.message));
-            setAuthUser(response.data.user);
-        } catch (error: any) {
-            toast.error(t(error.response?.data?.error));
-        } finally {
-            setUpdateLoading(false);
-        }
-    };
-
     return loading ? (
         <Loading />
     ) : (
-        <div className="flex justify-center p-8">
-            <Card className="w-full max-w-4xl shadow-xl rounded-2xl border-none bg-white dark:bg-slate-950">
+        <div className="flex justify-center p-8 bg-background">
+            <Card className="w-full max-w-4xl rounded-2xl border border-border bg-card shadow-sm">
                 <CardHeader className="flex flex-row items-center justify-between border-b pb-6">
                     <div>
-                        <CardTitle className="text-2xl font-bold">{t("pages.account.account_settings_title")}</CardTitle>
-                        <CardDescription>{t("pages.account.account_settings_description")}</CardDescription>
+                        <CardTitle className="text-2xl font-bold tracking-tight">
+                            {t("pages.account.account_settings_title")}
+                        </CardTitle>
+                        <CardDescription className="text-muted-foreground">
+                            {t("pages.account.account_settings_description")}
+                        </CardDescription>
                     </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="rounded-full border-border hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all active:scale-95"
+                            >
                                 <EllipsisVertical className="w-5 h-5" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="rounded-xl border border-border">
                             <DropdownMenuLabel>{t("pages.account.actions")}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive focus:bg-destructive/10" onClick={() => setOpenDeleteAccountDialog(true)}>
+                            <DropdownMenuItem
+                                className="text-destructive focus:bg-destructive/10 cursor-pointer font-medium"
+                                onClick={() => setOpenDeleteAccountDialog(true)}
+                            >
                                 <Trash className="w-4 h-4 mr-2" />
                                 {t("pages.account.delete_account")}
                             </DropdownMenuItem>
@@ -113,42 +93,32 @@ export const Account = () => {
                 </CardHeader>
 
                 <CardContent className="pt-8">
-                    <div className="flex flex-col items-center gap-6 mb-10">
-                        <Avatar className="w-32 h-32 border-4 border-primary/10 shadow-lg">
+                    <div className="flex flex-col items-center gap-4 mb-10">
+                        <Avatar className="w-32 h-32 border border-border shadow-md">
                             <AvatarImage src={authUser?.avatar} className="object-cover" />
                         </Avatar>
-                        <InputFile buttonText={t("pages.account.choose_image")} id="profile-picture" disabled={updateLoading} onChange={updateProfilePic} />
                     </div>
 
                     <Form {...updateForm}>
                         <form onSubmit={updateForm.handleSubmit(onUpdateSubmit)} className="space-y-6">
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <FormField
-                                    control={updateForm.control}
-                                    name="forename"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>{t("pages.account.forename_label")}</FormLabel>
-                                            <FormControl>
-                                                <Input {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={updateForm.control}
-                                    name="name"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>{t("pages.account.name_label")}</FormLabel>
-                                            <FormControl>
-                                                <Input {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-foreground">{t("pages.account.forename_label")}</label>
+                                    <Input
+                                        value={(authUser as any)?.forename || ""}
+                                        disabled
+                                        className="rounded-md border border-border bg-muted/30 cursor-not-allowed"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-foreground">{t("pages.account.name_label")}</label>
+                                    <Input
+                                        value={(authUser as any)?.name || ""}
+                                        disabled
+                                        className="rounded-md border border-border bg-muted/30 cursor-not-allowed"
+                                    />
+                                </div>
                             </div>
 
                             <FormField
@@ -156,19 +126,28 @@ export const Account = () => {
                                 name="username"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>{t("pages.account.username_label")}</FormLabel>
+                                        <FormLabel className="text-sm font-semibold">
+                                            {t("pages.account.username_label")}
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} />
+                                            <Input
+                                                {...field}
+                                                placeholder="Pseudo"
+                                                className="rounded-md border border-border focus-visible:ring-1 focus-visible:ring-foreground"
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
 
-                            <CardFooter className="px-0">
-                                <Button type="submit" disabled={updateLoading} className="w-full mt-4">
-                                    {updateLoading && <Loading className="w-4 h-4 mr-2" />}
-                                    {t("global.buttons.update")}
+                            <CardFooter className="px-0 pt-4">
+                                <Button
+                                    type="submit"
+                                    disabled={updateLoading}
+                                    className="w-full h-10 rounded-md bg-foreground text-background hover:opacity-90 transition-all font-bold"
+                                >
+                                    {updateLoading ? <Loading className="w-4 h-4 mr-2" /> : t("global.buttons.update")}
                                 </Button>
                             </CardFooter>
                         </form>

@@ -14,19 +14,15 @@ import { Builds } from "@/pages/Admin/components/builds";
 export const Router = () => {
     return (
         <Routes>
-            {/* 1. PAGES SANS SIDEBAR (Login) */}
             <Route element={<LayoutWrapper withLayout={false} />}>
                 <Route path="/login" element={<ProtectedRoute authRequired={false}><Login /></ProtectedRoute>} />
             </Route>
 
-            {/* 2. TOUTES LES PAGES AVEC SIDEBAR (Connecté) */}
             <Route element={<LayoutWrapper withLayout={true} />}>
 
-                {/* Routes Utilisateurs & Home */}
                 <Route path="/" element={<ProtectedRoute authRequired={true}><Home /></ProtectedRoute>} />
                 <Route path="/account" element={<ProtectedRoute authRequired={true}><Account /></ProtectedRoute>} />
 
-                {/* Routes Admin (imbriquées) */}
                 <Route path="/admin" element={<ProtectedRoute authRequired={true} role="admin"><AdminIndex /></ProtectedRoute>}>
                     <Route index element={<Navigate to="dashboard" replace />} />
                     <Route path="dashboard" element={<Dashboard />} />

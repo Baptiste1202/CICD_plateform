@@ -101,7 +101,6 @@ export const Navbar = () => {
   return (
       <>
         <div className="sticky top-0 left-0 right-0 z-50 border-b bg-background">
-          {/* Desktop */}
           <div className="hidden select-none md:flex items-center justify-between p-4 px-8 text-accent">
             <div className="text-3xl font-extrabold">
               <Link to="/">{configValues["APP_NAME"] || "App"}</Link>
@@ -147,7 +146,6 @@ export const Navbar = () => {
                           </DropdownMenuGroup>
                           <DropdownMenuSeparator />
                           <DropdownMenuGroup>
-                            {/* ✅ Utilise la fonction logout du contexte */}
                             <DropdownMenuItem className="hover:cursor-pointer text-destructive focus:text-destructive" onClick={() => logout()} disabled={loading}>
                               {t("navbar.logout")}
                               <DropdownMenuShortcut>
@@ -172,7 +170,6 @@ export const Navbar = () => {
             </div>
           </div>
 
-          {/* Mobile */}
           <div className="flex items-center justify-between p-4 md:hidden">
             <div className="text-3xl font-extrabold text-accent">
               <Link to="/">{configValues["APP_NAME"] || "App"}</Link>
@@ -180,7 +177,6 @@ export const Navbar = () => {
             <Menu onClick={() => setIsOpen(!isOpen)} className="cursor-pointer" />
           </div>
 
-          {/* Menu Mobile */}
           <div
               ref={menuRef}
               className={cn(
