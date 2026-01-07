@@ -1,11 +1,11 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-import { LevelBadge } from "../../../../components/customs/levelBadge";
+import { LevelBadge } from "../../../../components/customs/tables/levelBadge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Copy, EllipsisVertical, Trash } from "lucide-react";
 import { toast } from "sonner";
-import { AvatarWithStatusCell } from "../../../../components/customs/avatarStatusCell";
+import { AvatarWithStatusCell } from "../../../../components/customs/tables/avatarStatusCell";
 import { LogInterface } from "@/interfaces/Log";
 import { TFunction } from "i18next";
 

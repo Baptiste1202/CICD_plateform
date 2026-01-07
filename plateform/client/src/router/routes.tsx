@@ -1,84 +1,43 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { LayoutWrapper } from "./layoutWrapper";
-
-import { Account } from "@/pages/Account";
+import { Account } from "@/pages/Account/Account";
 import { ProtectedRoute } from "@/router/protectedRoute";
 import { Home } from "@/pages/Home";
-import { Index } from "@/pages/Admin";
+import { Index as AdminIndex } from "@/pages/Admin";
 import { Logs } from "@/pages/Admin/components/logs";
 import { Users } from "@/pages/Admin/components/users";
 import { Dashboard } from "@/pages/Admin/components/dashboard";
 import { Login } from "@/pages/Authentication/login";
-import { Register } from "@/pages/Authentication/register";
 import { Config } from "@/pages/Admin/components/config";
-import { RegisterGoogleForm } from "@/pages/Authentication/registerGoogleForm";
 import { Builds } from "@/pages/Admin/components/builds";
 
 export const Router = () => {
-  return (
-    <Routes>
-      <Route element={<LayoutWrapper withLayout={false} />}>
-        <Route
-          path="/login"
-          element={
-            <ProtectedRoute authRequired={false}>
-              <Login />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <ProtectedRoute authRequired={false}>
-              <Register />
-            </ProtectedRoute>
-          }
-        />
+    return (
+        <Routes>
+            {/* 1. PAGES SANS SIDEBAR (Login) */}
+            <Route element={<LayoutWrapper withLayout={false} />}>
+                <Route path="/login" element={<ProtectedRoute authRequired={false}><Login /></ProtectedRoute>} />
+            </Route>
 
-        <Route
-          path="/register/google"
-          element={
-            <ProtectedRoute authRequired={false}>
-              <RegisterGoogleForm />
-            </ProtectedRoute>
-          }
-        />
+            {/* 2. TOUTES LES PAGES AVEC SIDEBAR (Connecté) */}
+            <Route element={<LayoutWrapper withLayout={true} />}>
 
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute authRequired={true} role="admin">
-              <Index />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="users" element={<Users />} />
-          <Route path="logs" element={<Logs />} />
-          <Route path="builds" element={<Builds />} />
-          <Route path="settings" element={<Config />} />
-        </Route>
-      </Route>
+                {/* Routes Utilisateurs & Home */}
+                <Route path="/" element={<ProtectedRoute authRequired={true}><Home /></ProtectedRoute>} />
+                <Route path="/account" element={<ProtectedRoute authRequired={true}><Account /></ProtectedRoute>} />
 
-      <Route element={<LayoutWrapper />}>
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute authRequired={true}>
-              <Home />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/account"
-          element={
-            <ProtectedRoute authRequired={true}>
-              <Account />
-            </ProtectedRoute>
-          }
-        />
-      </Route>
-    </Routes>
-  );
+                {/* Routes Admin (imbriquées) */}
+                <Route path="/admin" element={<ProtectedRoute authRequired={true} role="admin"><AdminIndex /></ProtectedRoute>}>
+                    <Route index element={<Navigate to="dashboard" replace />} />
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="users" element={<Users />} />
+                    <Route path="logs" element={<Logs />} />
+                    <Route path="builds" element={<Builds />} />
+                    <Route path="settings" element={<Config />} />
+                </Route>
+            </Route>
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+    );
 };

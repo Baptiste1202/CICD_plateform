@@ -46,7 +46,6 @@ export default function ColorPicker({ value = "#3B82F6", onChange, className, di
 
   const { t } = useTranslation();
 
-  // Convert hex to HSL
   const hexToHsl = useCallback((hex: string) => {
     const r = Number.parseInt(hex.slice(1, 3), 16) / 255;
     const g = Number.parseInt(hex.slice(3, 5), 16) / 255;
@@ -78,7 +77,6 @@ export default function ColorPicker({ value = "#3B82F6", onChange, className, di
     return [h * 360, s * 100, l * 100];
   }, []);
 
-  // Convert HSL to hex
   const hslToHex = useCallback((h: number, s: number, l: number) => {
     h /= 360;
     s /= 100;
@@ -112,7 +110,6 @@ export default function ColorPicker({ value = "#3B82F6", onChange, className, di
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
   }, []);
 
-  // Initialize HSL values from the initial value prop
   useEffect(() => {
     if (value && value.match(/^#[0-9A-F]{6}$/i)) {
       const [h, s, l] = hexToHsl(value);
@@ -124,7 +121,6 @@ export default function ColorPicker({ value = "#3B82F6", onChange, className, di
     }
   }, [value, hexToHsl]);
 
-  // Handle HSL slider changes
   const handleHueChange = (newHue: number) => {
     isUpdatingFromHSL.current = true;
     setHue(newHue);
@@ -155,7 +151,6 @@ export default function ColorPicker({ value = "#3B82F6", onChange, className, di
     isUpdatingFromHSL.current = false;
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: Event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -208,7 +203,6 @@ export default function ColorPicker({ value = "#3B82F6", onChange, className, di
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err: any) {
-      console.error("Failed to copy color:", err);
     }
   };
 

@@ -66,16 +66,18 @@ export const Builds = () => {
         <h1 className="text-2xl font-bold">{t("pages.admin.builds")}</h1>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
-          {t("pages.admin.create_build")}
+          {t("pages.admin.build_page.create_build")}
         </Button>
       </div>
+
       <DataTable
-        columns={getColumns(t)}
-        data={builds}
-        loading={loading}
-        count={buildCount}
-        fetchData={fetchAllBuilds}
-        callback={callback}
+          columns={getColumns(t)}
+          data={builds}
+          isLoading={loading}
+          dataCount={buildCount}
+          fetchData={fetchAllBuilds}
+          callback={callback}
+          searchElement="projectName"
       />
       <CreateBuildDialog
         open={isCreateDialogOpen}

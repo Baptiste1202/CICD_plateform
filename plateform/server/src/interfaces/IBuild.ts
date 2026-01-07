@@ -11,9 +11,9 @@ export interface IBuild extends Document {
   _id: mongoose.Types.ObjectId;
   projectName: string;
   status: BuildStatus;
-  image: string; // référence à l'image Docker ou autre
+  image: string;
   logs: string[];
   createdAt: Date;
   updatedAt: Date;
-  user: mongoose.Types.ObjectId; // utilisateur qui a lancé le build
+  user: mongoose.Types.ObjectId;
 }

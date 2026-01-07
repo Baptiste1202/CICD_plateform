@@ -1,18 +1,27 @@
-import { Router } from "./router/routes.js";
-import { useAuthContext } from "./contexts/authContext.js";
-import { Loading } from "./components/customs/loading.js";
+import { Router } from "./router/routes";
+import { useAuthContext } from "./contexts/authContext";
+import { Loading } from "./components/customs/loading";
+import { useAxiosInterceptor } from "./hooks/useAxiosInterceptors";
+import { SocketProvider } from "./contexts/socketContext";
 import "./styles/index.css";
-import { useAxiosInterceptor } from "./hooks/useAxiosInterceptors.js";
 
 function App() {
-  const { loading } = useAuthContext();
+  const { loading, authUser } = useAuthContext();
   useAxiosInterceptor();
 
-  if (loading) {
-    return <Loading />;
-  }
+  if (loading) return <Loading />;
 
-  return <Router />;
+  return (
+      <>
+        {authUser ? (
+            <SocketProvider>
+              <Router />
+            </SocketProvider>
+        ) : (
+            <Router />
+        )}
+      </>
+  );
 }
 
 export default App;

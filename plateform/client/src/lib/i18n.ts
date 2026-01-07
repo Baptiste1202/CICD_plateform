@@ -16,7 +16,6 @@ export const listOfLocales = ["en", "fr"];
 const localeNames: { [key: string]: string } = {
   en: "English",
   fr: "Français",
-  // ...
 };
 
 export const getFullNamesOfLocales = (locale: string) => {

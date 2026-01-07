@@ -1,63 +1,57 @@
 import { Request, Response } from "express";
-import { createLog } from "./logController.js";
-import { logLevels } from "../utils/enums/logLevels.js";
-import { Config } from "../models/configModel.js";
+import { Config } from "../models/configModel";
+import { createLog } from "./logController";
+import { logLevels } from "../utils/enums/logLevels";
 
-/**
- * Gets configuration settings based on provided keys.
- * @returns {Object} JSON response with configuration settings.
- */
 export const getConfig = async (req: Request, res: Response): Promise<void> => {
-  const raw = req.query.keys as string | string[] | undefined;
-  const keys = Array.isArray(raw) ? raw.flatMap((k) => k.split(",")) : (raw?.split(",") ?? []);
-
   try {
+    const raw = req.query.keys as string;
+
+    if (!raw) {
+      const allConfigs = await Config.find({});
+      res.status(200).json({ config: allConfigs });
+      return;
+    }
+
+    const keys = raw.split(",");
     const configItems = await Config.find({ key: { $in: keys } });
+
     res.status(200).json({ config: configItems });
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Erreur lors de la récupération de la configuration" });
   }
 };
 
-/**
- * Updates configuration settings based on provided keys and values.
- * @returns {Object} JSON response with updated configuration settings.
- */
 export const updateConfig = async (req: Request, res: Response): Promise<void> => {
-  const { keys, config } = req.body;
+  const { config } = req.body;
 
-  if (!Array.isArray(keys) || typeof config !== "object" || config === null) {
-    createLog({
-      level: logLevels.ERROR,
-      message: "Invalid configuration update request",
-      userId: req.userId,
-    });
-    res.status(400).json({ message: "invalid_config" });
+  if (!config || typeof config !== "object") {
+    res.status(400).json({ message: "Format de configuration invalide" });
     return;
   }
 
   try {
+    const keys = Object.keys(config);
+
     for (const key of keys) {
-      if (Object.prototype.hasOwnProperty.call(config, key)) {
-        await Config.findOneAndUpdate({ key }, { value: config[key] }, { new: true, upsert: true });
-        createLog({
-          level: logLevels.INFO,
-          message: `Configuration updated for key : ${key}`,
-          userId: req.userId,
-        });
-      } else {
-        createLog({
-          level: logLevels.ERROR,
-          message: `Key ${key} not found in config object`,
-          userId: req.userId,
-        });
-        res.status(400).json({ message: `config_not_found` });
-        return;
-      }
+      const value = config[key];
+
+      await Config.findOneAndUpdate(
+          { key },
+          { value },
+          { new: true, upsert: true }
+      );
+
+      await createLog({
+        level: logLevels.INFO,
+        message: `Configuration mise à jour : ${key} -> ${value}`,
+        userId: (req as any).user?.uid || "System",
+      });
     }
 
-    res.json({ message: "config_updated" });
+    res.json({ message: "Configuration mise à jour avec succès" });
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error("❌ Erreur updateConfig:", err.message);
+    res.status(500).json({ error: "Erreur lors de la mise à jour" });
   }
 };

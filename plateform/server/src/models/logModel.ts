@@ -4,7 +4,6 @@ import { logLevels } from "../utils/enums/logLevels.js";
 
 const allowedLogLevels = Object.values(logLevels);
 
-// Crée un objet schema en respectant SchemaDefinition<ILog>
 const logSchema = new Schema<ILog>(
   {
     message: { type: String, required: true },

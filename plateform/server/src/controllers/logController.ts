@@ -45,7 +45,6 @@ export const createLog = async ({ message, userId, level }: CreateLogParams): Pr
   try {
     await Log.create({ message, user: userId, level });
   } catch (err: any) {
-    console.error("createLog: Error creating log", err);
   }
 };
 

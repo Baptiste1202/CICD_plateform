@@ -37,17 +37,23 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
           fetchedKeys.add(c.key);
         }
 
-        // Marque les clés manquantes avec une valeur spéciale
         for (const key of missingKeys) {
           if (!fetchedKeys.has(key)) {
-            configMap[key] = "__NOT_FOUND__";
+            if (key === "APP_NAME") {
+              configMap[key] = "__NOT_FOUND__CICD";
+            }
+            else if (key === "ACCENT_COLOR") {
+              configMap[key] = "#3b82f6";
+            }
+            else {
+              configMap[key] = "";
+            }
           }
         }
 
         setConfigValues((prevConfig) => ({ ...prevConfig, ...configMap }));
         return { ...configValues, ...configMap };
       } catch (err: any) {
-        console.error("Config fetch failed:", err.response?.status, err.response?.data);
         return configValues;
       }
     },

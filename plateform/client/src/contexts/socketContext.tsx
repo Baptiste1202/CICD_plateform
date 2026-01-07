@@ -1,52 +1,55 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useAuthContext } from "./authContext";
-import io, { Socket } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
 interface SocketContextType {
   socket: Socket | null;
   onlineUsers: string[];
-  isOnline: boolean;
 }
 
-const socketContext = createContext<SocketContextType | undefined>(undefined);
+const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
-export const useSocketContext = (): SocketContextType => {
-  const context = useContext(socketContext);
+export const useSocketContext = () => {
+  const context = useContext(SocketContext);
   if (!context) {
-    throw new Error("useSocketContext must be used within a SocketContextProvider");
+    throw new Error("useSocketContext doit être utilisé à l'intérieur d'un SocketProvider");
   }
   return context;
 };
 
-interface SocketContextProviderProps {
-  children: React.ReactNode;
-}
-
-export const SocketContextProvider: React.FC<SocketContextProviderProps> = ({ children }) => {
+export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
-  const { authUser } = useAuthContext();
-  const [isOnline, setIsOnline] = useState(false);
 
   useEffect(() => {
-    if (authUser?._id) {
-      const newSocket = io(import.meta.env.VITE_API_URL, {
-        query: { userId: authUser._id },
-        withCredentials: true,
-      });
+    const token = localStorage.getItem("accessToken");
 
-      setSocket(newSocket);
+    const newSocket = io("http://localhost:5001", {
+      withCredentials: true,
+      transports: ["websocket"],
+      auth: {
+        token: token,
+      },
+    });
 
-      newSocket.on("getOnlineUsers", (users: string[]) => {
-        setOnlineUsers(users);
-        setIsOnline(users.includes(authUser._id));
-      });
+    newSocket.on("connect", () => {
+      console.log("🚀 Connecté au serveur Socket.io avec l'ID:", newSocket.id);
+    });
 
-      return () => {
-        newSocket.disconnect();
-      };
-    }
-  }, [authUser?._id]);
+    newSocket.on("getOnlineUsers", (users: string[]) => {
+      setOnlineUsers(users);
+    });
 
-  return <socketContext.Provider value={{ socket, onlineUsers, isOnline }}>{children}</socketContext.Provider>;
+    setSocket(newSocket);
+
+    return () => {
+      console.log("🔌 Déconnexion du socket...");
+      newSocket.close();
+    };
+  }, []);
+
+  return (
+      <SocketContext.Provider value={{ socket, onlineUsers }}>
+        {children}
+      </SocketContext.Provider>
+  );
 };

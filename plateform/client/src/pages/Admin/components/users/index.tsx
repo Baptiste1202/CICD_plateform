@@ -25,59 +25,47 @@ export const Users = () => {
       setUsers(response.data.users);
       setUserCount(response.data.count);
     } catch (error: any) {
-      toast.error(t(error.response.data.error));
+      toast.error(t(error.response?.data?.error || "Error fetching users"));
     } finally {
       setLoading(false);
     }
   }
 
-  function callback(action: string, data: any) {
-    setSelectedUser(undefined);
-    switch (action) {
-      case "create":
-        setAction("create");
-        setOpenDialog(true);
-        break;
-      case "update":
-        setSelectedUser(users.find((user) => user._id === data));
-        setAction("update");
-        setOpenDialog(true);
-        break;
-      case "delete":
-        setSelectedUser(users.find((user) => user._id === data));
-        setAction("delete");
-        setOpenDialog(true);
-      default:
-        break;
+  const handleAction = (type: string, userId?: string) => {
+    setAction(type);
+    if (userId) {
+      setSelectedUser(users.find((u) => u._id === userId));
+    } else {
+      setSelectedUser(undefined);
     }
-  }
+    setOpenDialog(true);
+  };
 
   return (
-    <div>
-      <div className="container px-4 mx-auto">
-        <DataTable
-          columns={getColumns(callback, t)}
-          data={users}
-          dataCount={userCount}
-          fetchData={fetchUsers}
-          isLoading={loading}
-          callback={callback}
-          searchElement="username"
-          actions={["create"]}
-        />
-      </div>
-      {openDialog && (
-        <Dialog open={openDialog} onOpenChange={() => setOpenDialog(false)}>
-          <DialogContent className="sm:max-w-[625px]">
+      <div className="py-6">
+        <div className="container px-4 mx-auto">
+          <DataTable
+              columns={getColumns(handleAction, t)}
+              data={users}
+              dataCount={userCount}
+              fetchData={fetchUsers}
+              isLoading={loading}
+              callback={handleAction}
+              searchElement="username"
+              actions={[]}
+          />
+        </div>
+
+        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+          <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>
-                {t(`pages.admin.users_page.actions_type.` + action)} {t("pages.admin.users_page.a_user")}
+              <DialogTitle className="capitalize">
+                {t(`pages.admin.users_page.actions_type.${action}`)} {t("pages.admin.users_page.a_user")}
               </DialogTitle>
             </DialogHeader>
             <UserForm dialog={setOpenDialog} refresh={fetchUsers} action={action} user={selectedUser} />
           </DialogContent>
         </Dialog>
-      )}
-    </div>
+      </div>
   );
 };

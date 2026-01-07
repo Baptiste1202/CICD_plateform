@@ -33,47 +33,49 @@ export const CreateBuildDialog = ({ open, onOpenChange, onCreate }: CreateBuildD
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{t("pages.admin.builds.create_build")}</DialogTitle>
-          <DialogDescription>
-            {t("pages.admin.builds.create_build_description")}
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="projectName" className="text-right">
-                {t("pages.admin.builds.project_name")}
-              </Label>
-              <Input
-                id="projectName"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                className="col-span-3"
-                required
-              />
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{t("pages.admin.build_page.create_build")}</DialogTitle>
+            <DialogDescription>
+              {t("pages.admin.build_page.create_build_description")}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="projectName" className="text-right">
+                  {t("pages.admin.build_page.project_name")}
+                </Label>
+                <Input
+                    id="projectName"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    className="col-span-3"
+                    placeholder={t("pages.admin.build_page.project_name")}
+                    required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="image" className="text-right">
+                  {t("pages.admin.build_page.image")}
+                </Label>
+                <Input
+                    id="image"
+                    value={image}
+                    onChange={(e) => setImage(e.target.value)}
+                    className="col-span-3"
+                    placeholder="e.g., node:18-alpine"
+                    required
+                />
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="image" className="text-right">
-                {t("pages.admin.builds.image")}
-              </Label>
-              <Input
-                id="image"
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                className="col-span-3"
-                placeholder="e.g., node:18-alpine"
-                required
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="submit">{t("pages.admin.builds.create")}</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <DialogFooter>
+              {/* Utilisation de la clé globale pour le bouton */}
+              <Button type="submit">{t("global.buttons.save")}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
   );
 };

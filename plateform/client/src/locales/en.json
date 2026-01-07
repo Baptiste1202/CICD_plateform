@@ -37,8 +37,6 @@
       "forename_label": "Forename",
       "name_label": "Name",
       "username_label": "Username",
-      "email_label": "Email",
-      "password_label": "Password",
       "choose_image": "Choose Image",
       "delete_account_title": "Delete account",
       "delete_account_description": "Please be very mindful of your action, there is no going back",
@@ -86,7 +84,6 @@
       "username": "Username",
       "username_description": "Enter your username",
       "email": "Email",
-      "email_description": "Enter your email",
       "password": "Password",
       "password_description": "Enter your password",
       "confirmPassword": "Confirm password",
@@ -112,39 +109,44 @@
     },
     "admin": {
       "home": "Home",
+      "admin": "Administration",
       "dashboard": "Dashboard",
       "users": "Users",
-      "settings": "Settings",
-      "admin": "Admin",
+      "users_page": {
+        "roles": {
+          "admin": "Administrator",
+          "user": "User"
+        },
+        "user": "User",
+        "role": "Role",
+        "email": "Email",
+        "joined": "Joined",
+        "actions": "Actions",
+        "copy_id": "Copy ID",
+        "copy_id_success": "ID copied to clipboard!",
+        "update_user": "Update user",
+        "delete_user": "Delete user",
+        "a_user": "a user",
+        "actions_type": {
+          "update": "Update",
+          "delete": "Delete"
+        },
+        "form": {
+          "username": "Username",
+          "role": "Role",
+          "user": "User",
+          "admin": "Admin",
+          "update": "Update",
+          "delete": "Confirm Delete"
+        }
+      },
       "logs": "Logs",
-      "back_to_app": "Back to home",
-      "dashboard_page": {
-        "active_users": "Active Users",
-        "total_users": "Total Users",
-        "auth_methods": "Authentication Methods",
-        "auth_methods_description": "This section shows the number of users registered with each authentication method.",
-        "of_users": "of all users"
-      },
-      "config_page": {
-        "title": "Configuration",
-        "description": "This page allows you to configure the application settings. Make sure to save your changes before leaving this page.",
-        "save_changes": "Save changes",
-        "updating_config": "Updating configuration...",
-        "app_name": "Application Name",
-        "app_name_description": "Enter the name of your application. This will be displayed in the header and in various places throughout the application.",
-        "accent_color": "Accent Color",
-        "accent_color_description": "Choose the accent color for your application. This will be used in various places throughout the application."
-      },
       "log_page": {
         "level": "Level",
         "user": "User",
-        "unknow_user": "Unknown User",
         "message": "Message",
         "date": "Date",
         "actions": "Actions",
-        "copy_id": "Copy Log ID",
-        "copy_id_success": "Log ID copied to clipboard",
-        "delete_log": "Delete this Log",
         "levels": {
           "info": "Info",
           "warn": "Warning",
@@ -152,12 +154,24 @@
           "debug": "Debug"
         }
       },
+      "config_page": {
+        "title": "Configuration",
+        "description": "This page allows you to configure the application settings. Make sure to save your changes before leaving this page.",
+        "app_name": "Application Name",
+        "app_name_description": "Enter the name of your application. It will be displayed in the header.",
+        "accent_color": "Accent Color",
+        "accent_color_description": "Choose the accent color for your application."
+      },
       "builds": "Builds",
-      "create_build": "Create Build",
-      "builds_page": {
+      "build_page": {
+        "title": "Builds",
+        "create_build": "Create a Build",
+        "create_build_description": "Start a new build process for a specific project.",
         "project_name": "Project Name",
+        "project_name_placeholder": "e.g., My Awesome Project",
         "status": "Status",
-        "image": "Image",
+        "image": "Docker Image",
+        "image_placeholder": "e.g., node:18-alpine",
         "created_at": "Created At",
         "actions": "Actions",
         "restart": "Restart",
@@ -165,64 +179,18 @@
         "status_running": "Running",
         "status_success": "Success",
         "status_failed": "Failed",
-        "create_build": "Create Build",
-        "create_build_description": "Enter the details for the new build.",
-        "create": "Create"
-      },
-      "users_page": {
-        "user": "User",
-        "username": "Username",
-        "email": "Email",
-        "role": "Role",
-        "joined": "Joined",
-        "actions": "Actions",
-        "auth_type": "Authentication Type",
-        "roles": {
-          "admin": "Administrator",
-          "user": "User"
-        },
-        "a_user": "a user",
-        "actions_type": {
-          "create": "Create",
-          "update": "Update",
-          "delete": "Delete"
-        },
-        "copy_id": "Copy User ID",
-        "copy_id_success": "User ID copied to clipboard",
-        "delete_user": "Delete this User",
-        "update_user": "Update this User",
         "form": {
-          "name_min": "Name must be at least 2 characters long.",
-          "name_max": "Name must be at most 25 characters long.",
-          "forename_min": "Forename must be at least 2 characters long.",
-          "forename_max": "Forename must be at most 25 characters long.",
-          "username_min": "Username must be at least 2 characters long.",
-          "username_max": "Username must be at most 25 characters long.",
-          "invalid_email": "Invalid email address.",
-          "username_no_spaces": "Username must not contain leading, trailing, middle spaces or uppercase letters.",
-          "password_required": "Password is required.",
-          "confirm_delete_required": "Please confirm the deletion of the user by typing 'DELETE'.",
-          "forename": "Forename",
-          "name": "Name",
-          "username": "Username",
-          "email": "Email",
-          "password": "Password",
-          "generate_password": "Generate",
-          "copy_password": "Copy password",
-          "no_password_yet": "No password generated yet",
-          "password_generated": "Password generated successfully",
-          "password_copied": "Password copied to clipboard",
-          "role": "Role",
-          "select_role_placeholder": "Select a role for the new user",
-          "user": "User",
-          "admin": "Administrator",
-          "save": "Save",
-          "update": "Update",
-          "confirm_delete_label": "Type \"DELETE\" to confirm",
-          "confirm_delete_placeholder": "DELETE",
-          "delete": "Delete",
-          "confirm_text_invalid": "Confirmation text is incorrect"
+          "submit": "Create build"
         }
+      },
+      "settings": "API Configuration",
+      "back_to_app": "Back to Home",
+      "dashboard_page": {
+        "active_users": "Active Users",
+        "total_users": "Total Users",
+        "auth_methods": "Authentication Methods",
+        "auth_methods_description": "This section shows the number of users registered with each authentication method.",
+        "of_users": "of all users"
       }
     }
   },
@@ -254,8 +222,10 @@
       "create_entity": "Create a new entity",
       "delete_entity": "Delete all entities",
       "filters": {
-        "username": "Filter by username",
-        "message": "Filter by message"
+        "projectName": "Search by project...",
+        "username": "Search by username...",
+        "message": "Search by message...",
+        "default": "Search..."
       },
       "delete_title": "Delete all entities",
       "delete_description": "Are you sure you want to delete all entities? This action cannot be undone.",

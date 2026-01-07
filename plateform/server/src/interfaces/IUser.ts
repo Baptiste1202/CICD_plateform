@@ -10,5 +10,5 @@ export interface IUser extends Document {
   role: string;
   avatar: string;
   auth_type: string;
-  fullname?: string; // virtual
+  fullname?: string;
 }

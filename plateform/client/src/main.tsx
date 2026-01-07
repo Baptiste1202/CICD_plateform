@@ -1,39 +1,37 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.js";
+import App from "./App";
 import { BrowserRouter } from "react-router-dom";
-import { Toaster } from "./components/ui/sonner.js";
-import { AuthContextProvider } from "./contexts/authContext.js";
-import { ThemeProvider } from "./providers/theme-provider.js";
-import { SocketContextProvider } from "./contexts/socketContext.js";
-import { ConfigProvider } from "./contexts/configContext.js";
-import { AppInitializer } from "./initializer.js";
-import "./lib/i18n.js";
+import { Toaster } from "./components/ui/sonner";
+import { AuthContextProvider } from "./contexts/authContext";
+import { ThemeProvider } from "./providers/theme-provider";
+import { SocketProvider } from "./contexts/socketContext";
+import { ConfigProvider } from "./contexts/configContext";
+import { AppInitializer } from "./initializer";
+import "./lib/i18n";
+import "./styles/index.css";
 
 if (!import.meta.env.VITE_API_URL) {
-  throw new Error("VITE_API_URL is not defined in the environment file");
+  console.warn("⚠️ VITE_API_URL n'est pas définie. Le fallback http://localhost:5001 sera utilisé via axiosConfig.");
 }
 
 const rootElement = document.getElementById("root");
-if (!rootElement) {
-  console.error("Failed to find the root element");
-} else {
+
+if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
-    <React.StrictMode>
-      <ConfigProvider>
-        <AppInitializer>
+      <React.StrictMode>
+        <ConfigProvider>
           <AuthContextProvider>
-            <SocketContextProvider>
+            <AppInitializer>
               <BrowserRouter>
                 <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
                   <App />
                   <Toaster />
                 </ThemeProvider>
               </BrowserRouter>
-            </SocketContextProvider>
+            </AppInitializer>
           </AuthContextProvider>
-        </AppInitializer>
-      </ConfigProvider>
-    </React.StrictMode>,
+        </ConfigProvider>
+      </React.StrictMode>,
   );
 }

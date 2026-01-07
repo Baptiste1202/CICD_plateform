@@ -1,4 +1,3 @@
-// sonner.tsx
 import { useTheme } from "@/providers/theme-provider";
 import { AlertTriangle, CheckCircle, Info, Loader, XCircle } from "lucide-react";
 import { Toaster as Sonner } from "sonner";

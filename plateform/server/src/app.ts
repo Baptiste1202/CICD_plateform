@@ -1,25 +1,33 @@
-import express, { Application } from "express";
-
-import "dotenv/config";
+import express from "express";
 import cors from "cors";
-import { corsOptions } from "./configuration/corsOptions.js";
-import { router } from "./routes/router.js";
+import adminFirebase from "firebase-admin";
+import { readFileSync } from "fs";
 
-// Create the Express application instance
-export const app: Application = express();
+import configRoutes from "./routes/configRoutes.js";
+import authenticationRoutes from "./routes/authenticationRoutes.js";
+import buildRoutes from "./routes/buildRoutes.js";
+import logsRoutes from "./routes/logsRoutes.js";
+import usersRoutes from "./routes/usersRoutes.js";
 
-// Global middleware
-app.use(express.json()); // Parse incoming JSON payloads
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded payloads
+const serviceAccount = JSON.parse(
+    readFileSync(new URL("../serviceAccountKey.json", import.meta.url), "utf-8")
+);
 
-// Log each incoming request (method and path)
-app.use((req, res, next) => {
-  console.log(req.path, req.method);
-  next();
+export const admin = adminFirebase.initializeApp({
+    credential: adminFirebase.credential.cert(serviceAccount),
 });
 
-// Enable CORS with predefined options
-app.use(cors(corsOptions));
+const app = express();
 
-// Register main application routes
-app.use(router);
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(express.json());
+
+app.use("/api/config", configRoutes);
+app.use("/api/auth", authenticationRoutes);
+app.use("/api/builds", buildRoutes);
+app.use("/api/logs", logsRoutes);
+app.use("/api/users", usersRoutes);
+
+app.get("/api/ping", (req, res) => res.json({ message: "pong" }));
+
+export { app };

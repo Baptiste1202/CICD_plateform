@@ -29,7 +29,6 @@ export const DeleteAccountForm = ({ setOpen }: DeleteAccountProps) => {
     resolver: zodResolver(deleteAccountSchema),
     defaultValues: {
       checkApproval: false,
-      password: "",
     },
   });
 
@@ -76,19 +75,6 @@ export const DeleteAccountForm = ({ setOpen }: DeleteAccountProps) => {
             )}
           />
 
-          <FormField
-            control={deleteAccountForm.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>{t("pages.account.password_label")}</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder={t("pages.account.password_placeholder")} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
           <DialogFooter>
             <Button disabled={loading} type="submit">
