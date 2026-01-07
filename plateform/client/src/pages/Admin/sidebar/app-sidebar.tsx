@@ -80,12 +80,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarContent className="bg-background pt-4">
                 <NavMain items={menuToDisplay} />
             </SidebarContent>
-            <SidebarFooter className="border-t-2 border-border p-4 space-y-4 bg-background">
-                <div className="flex items-center justify-around group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-4 border-2 border-border py-2 rounded-xl">
+            <SidebarFooter className="border-t-2 border-border p-4 space-y-4 bg-background group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:gap-4 transition-all duration-200">
+                <div className="flex items-center justify-around border-2 border-border py-2 rounded-xl group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:py-0 group-data-[collapsible=icon]:gap-4">
                     <ThemeChanger />
                     <LanguageChanger />
                 </div>
-                <div className="border-2 border-border rounded-xl p-1">
+
+                <div className="border-2 border-border rounded-xl p-1 group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:p-0">
                     <NavUser user={authUser} />
                 </div>
             </SidebarFooter>

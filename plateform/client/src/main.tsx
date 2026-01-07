@@ -11,10 +11,6 @@ import { AppInitializer } from "./initializer";
 import "./lib/i18n";
 import "./styles/index.css";
 
-if (!import.meta.env.VITE_API_URL) {
-  console.warn("⚠️ VITE_API_URL n'est pas définie. Le fallback http://localhost:5001 sera utilisé via axiosConfig.");
-}
-
 const rootElement = document.getElementById("root");
 
 if (rootElement) {

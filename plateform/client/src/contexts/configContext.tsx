@@ -40,7 +40,7 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
         for (const key of missingKeys) {
           if (!fetchedKeys.has(key)) {
             if (key === "APP_NAME") {
-              configMap[key] = "__NOT_FOUND__CICD";
+              configMap[key] = "CI/CD PLATEFORM";
             }
             else if (key === "ACCENT_COLOR") {
               configMap[key] = "#3b82f6";

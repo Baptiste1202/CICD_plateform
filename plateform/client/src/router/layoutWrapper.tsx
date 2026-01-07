@@ -29,7 +29,7 @@ export const LayoutWrapper = ({ withLayout = true }: LayoutWrapperProps) => {
                         <SidebarTrigger className="-ml-1" />
                         <Separator orientation="vertical" className="mr-2 h-4" />
                         <h1 className="text-sm font-semibold tracking-tight uppercase text-muted-foreground">
-                            {authUser.role === 'admin' ? "Console Administration" : "Espace Projet"}
+                            Espace projet {authUser.forename} {authUser.name}
                         </h1>
                     </div>
                 </header>
