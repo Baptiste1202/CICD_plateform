@@ -18,3 +18,5 @@ coverage
 
 # Variables locales
 .env
+
+serviceAccountKey.json
