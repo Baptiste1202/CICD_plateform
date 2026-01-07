@@ -37,6 +37,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       isSyncing.current = false;
       window.location.href = "/login";
     } catch (error) {
+      console.error("Erreur logout:", error);
     }
   };
 
@@ -50,7 +51,9 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      if (isSyncing.current || (authUser && localStorage.getItem("accessToken"))) {
+      if (isSyncing.current) return;
+
+      if (authUser && localStorage.getItem("accessToken")) {
         setLoading(false);
         return;
       }
@@ -59,10 +62,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         isSyncing.current = true;
         setLoading(true);
 
-        const hasTokenBeforeSync = !!localStorage.getItem("accessToken");
-
         const idToken = await firebaseUser.getIdToken();
-
         const response = await axios.post(
             "http://localhost:5001/api/auth/google-sync",
             {},
@@ -72,23 +72,19 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         if (response.data.accessToken) {
           localStorage.setItem("accessToken", response.data.accessToken);
           setAuthUser(response.data.user);
-
-          if (!hasTokenBeforeSync) {
-            toast.success(t("pages.login.messages.login_success"));
-          }
-
         }
       } catch (error: any) {
         if (error.response?.status === 401) {
           await logout();
         }
       } finally {
+        isSyncing.current = false;
         setLoading(false);
       }
     });
 
     return () => unsubscribe();
-  }, [t, authUser]);
+  }, [t]);
 
   return (
       <AuthContext.Provider value={{ authUser, setAuthUser, loading, logout }}>
