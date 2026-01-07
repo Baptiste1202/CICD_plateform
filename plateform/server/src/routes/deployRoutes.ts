@@ -12,7 +12,6 @@ const __dirname = dirname(__filename);
 
 export const deployRoutes = express.Router();
 
-// Configuration dynamique
 const SSH_TARGET = process.env.DEPLOY_SSH_TARGET || 'ubuntu@127.0.0.1';
 const SSH_PORT = process.env.DEPLOY_SSH_PORT || '2222';
 const REMOTE_PATH = process.env.DEPLOY_REMOTE_PATH || '/home/ubuntu/CICD-run';
@@ -20,7 +19,6 @@ const REMOTE_PATH = process.env.DEPLOY_REMOTE_PATH || '/home/ubuntu/CICD-run';
 function runCommand(command: string, args: string[], cwd: string, callback: (error?: any) => void) {
   io?.emit('deploy-log', `> [${path.basename(cwd)}] ${command} ${args.join(' ')}\n`);
 
-  // On injecte DOCKER_HOST : le build et le lancement se font DIRECTEMENT sur la VM
   const child = spawn(command, args, {
     cwd,
     shell: true,

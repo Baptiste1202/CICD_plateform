@@ -12,7 +12,6 @@ export function NavMain({items}: { items: any[] }) {
   const navigate = useNavigate();
   const { isMobile, setOpenMobile } = useSidebar();
 
-  // Sécurité anti-crash : si pas d'utilisateur, on n'affiche rien
   if (!authUser) return null;
 
   return (

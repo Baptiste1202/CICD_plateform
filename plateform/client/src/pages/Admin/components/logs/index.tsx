@@ -19,16 +19,12 @@ export const Logs = () => {
     try {
       const requests = [];
 
-      // If admin, fetch system logs
       if (authUser?.role === 'admin') {
         requests.push(axiosConfig.get("/logs?page=" + page + "&size=" + size));
       } else {
         requests.push(Promise.resolve({ data: { logs: [], count: 0 } }));
       }
 
-      // Fetch builds for everyone (backend should filter or we filter frontend if needed, but for now assuming backend returns relevant builds)
-      // Actually user said "Users : voient uniquement leurs propres pipelines".
-      // We'll fetch builds and separate them.
       requests.push(axiosConfig.get("/builds?page=" + page + "&size=" + size));
 
       const [logsRes, buildsRes] = await Promise.all(requests);
@@ -36,28 +32,19 @@ export const Logs = () => {
       const logsFromApi = logsRes.data.logs || [];
       const buildsFromApi = buildsRes.data.builds || [];
 
-      // Add type identifier
       const typedLogs = logsFromApi.map((l: any) => ({ ...l, type: 'log' }));
-      const typedBuilds = buildsFromApi.map((b: any) => ({ ...b, type: 'build', level: 'info', message: `Build ${b.projectName}` })); // Map build to log-like structure for display if needed, but columns will handle it.
+      const typedBuilds = buildsFromApi.map((b: any) => ({ ...b, type: 'build', level: 'info', message: `Build ${b.projectName}` }));
 
       let mergedData = [...typedLogs, ...typedBuilds];
 
-      // Sort by createdAt desc
       mergedData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-      // Filter for non-admins if API returns everything (safety check)
       if (authUser?.role !== 'admin') {
-        // Users only see their own builds (assuming builds have user info or backend filters). 
-        // If backend filters, good. If not, and we have user info in build, we filter.
-        // But logic mainly says "Users: voient uniquement leurs propres pipelines".
-        // The requirement says "Page Journaux ... Filtrage : Admins: voient tout ... Users: voient uniquement leurs propres pipelines".
-        // Since I can't easily change backend right now, I'll assume backend /builds returns what's appropriate or I filter if I can.
-        // But for logs/system logs, I already conditionally fetched.
-        mergedData = mergedData.filter(item => item.type === 'build'); // Non-admins only see builds here as per requirement "Users : voient uniquement leurs propres pipelines" (implying no system logs).
+        mergedData = mergedData.filter(item => item.type === 'build');
       }
 
       setData(mergedData);
-      setTotalCount(logsRes.data.count + buildsRes.data.count); // Approx count for pagination
+      setTotalCount(logsRes.data.count + buildsRes.data.count);
     } catch (error: any) {
       toast.error(t(error.response?.data?.error || "Error fetching data"));
     } finally {
