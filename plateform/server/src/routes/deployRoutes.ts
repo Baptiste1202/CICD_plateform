@@ -203,7 +203,7 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
     {
       folder: cicdRunDir,
       cmd: "docker-compose",
-      args: ["up", "-d", "--build"]
+      args: ["build"]
     },
     {
       folder: cicdRunDir,
