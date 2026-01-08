@@ -18,7 +18,12 @@ export const deployRoutes = express.Router();
 function runCommand(command: string, args: string[], cwd: string, callback: (error?: any) => void) {
   io?.emit('deploy-log', `> [${path.basename(cwd)}] ${command} ${args.join(' ')}\n`);
 
-  const child = spawn(command, args, { cwd, shell: true });
+  const env = {
+    ...process.env,
+    SONAR_TOKEN: process.env.SONAR_TOKEN
+  };
+
+  const child = spawn(command, args, { cwd, shell: true, env });
 
   child.stdout.on('data', (data) => io?.emit('deploy-log', data.toString()));
   child.stderr.on('data', (data) => io?.emit('deploy-log', `LOG: ${data.toString()}`));
@@ -40,11 +45,8 @@ function transferDockerImageViaSSH(params: { image: string; sshTarget: string; u
   const saveProc = spawn("docker", ["save", image], { cwd, shell: false });
   const remoteCmd = `${useSudo ? 'sudo -S ' : ''}docker load`;
 
-  // Utiliser ssh standard (OpenSSH inclus dans Windows 10/11)
-  // Note: nécessite une configuration de clé SSH pour authentification automatique
   const sshProc = spawn("ssh", ["-C", "-o", "StrictHostKeyChecking=no", sshTarget, remoteCmd], { cwd, shell: false });
 
-  // Si sudo requiert un mot de passe, l'envoyer avant le flux de l'image
   if (useSudo && sudoPassword) {
     try {
       sshProc.stdin.write(`${sudoPassword}\n`);
@@ -53,16 +55,14 @@ function transferDockerImageViaSSH(params: { image: string; sshTarget: string; u
     }
   }
 
-  // Stream de l'image Docker vers docker load distant
   saveProc.stdout.pipe(sshProc.stdin);
 
-  // Forward logs
   saveProc.stderr.on('data', (d) => io?.emit('deploy-log', `LOG[docker save]: ${d.toString()}`));
   sshProc.stdout.on('data', (d) => io?.emit('deploy-log', d.toString()));
   sshProc.stderr.on('data', (d) => io?.emit('deploy-log', `LOG[ssh]: ${d.toString()}`));
 
   let finished = false;
-  const TRANSFER_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+  const TRANSFER_TIMEOUT_MS = 30 * 60 * 1000;
   const timeout = setTimeout(() => {
     io?.emit('deploy-log', `❌ Transfert expiré après ${Math.round(TRANSFER_TIMEOUT_MS/60000)} min.\n`);
     finalize(new Error('Transfert de l\'image expiré'));
@@ -89,7 +89,6 @@ function transferDockerImageViaSSH(params: { image: string; sshTarget: string; u
     }
   });
 
-  // Si docker save se termine avant ssh, on attend la fin de ssh.
   saveProc.on('close', (code) => {
     if (code !== 0) {
       finalize(new Error(`docker save s'est terminé avec le code ${code}`));
@@ -99,14 +98,10 @@ function transferDockerImageViaSSH(params: { image: string; sshTarget: string; u
 
 function executeRemoteCommand(params: { sshTarget: string; command: string; cwd: string; sshPassword?: string }, callback: (error?: any) => void) {
   const { sshTarget, command, cwd, sshPassword } = params;
-
   io?.emit('deploy-log', `> [remote] ssh ${sshTarget} "${command}"\n`);
-
   const sshProc = spawn("ssh", ["-o", "StrictHostKeyChecking=no", sshTarget, command], { cwd, shell: false });
-
   sshProc.stdout.on('data', (d) => io?.emit('deploy-log', d.toString()));
   sshProc.stderr.on('data', (d) => io?.emit('deploy-log', `LOG[ssh]: ${d.toString()}`));
-
   sshProc.on('close', (code) => {
     if (code !== 0) {
       callback(new Error(`La commande distante a échoué avec le code ${code}`));
@@ -115,20 +110,15 @@ function executeRemoteCommand(params: { sshTarget: string; command: string; cwd:
       callback();
     }
   });
-
   sshProc.on('error', (e) => callback(new Error(`ssh a échoué: ${e.message}`)));
 }
 
 function copyFileToRemote(params: { sshTarget: string; localFile: string; remotePath: string; cwd: string; sshPassword?: string }, callback: (error?: any) => void) {
   const { sshTarget, localFile, remotePath, cwd, sshPassword } = params;
-
   io?.emit('deploy-log', `> [scp] ${path.basename(localFile)} → ${sshTarget}:${remotePath}\n`);
-
   const scpProc = spawn("scp", ["-o", "StrictHostKeyChecking=no", localFile, `${sshTarget}:${remotePath}`], { cwd, shell: false });
-
   scpProc.stdout.on('data', (d) => io?.emit('deploy-log', d.toString()));
   scpProc.stderr.on('data', (d) => io?.emit('deploy-log', `LOG[scp]: ${d.toString()}`));
-
   scpProc.on('close', (code) => {
     if (code !== 0) {
       callback(new Error(`Le transfert du fichier a échoué avec le code ${code}`));
@@ -137,25 +127,19 @@ function copyFileToRemote(params: { sshTarget: string; localFile: string; remote
       callback();
     }
   });
-
   scpProc.on('error', (e) => callback(new Error(`scp a échoué: ${e.message}`)));
 }
 
 deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
   const appMetierRoot = path.resolve(__dirname, "../../../../Application_metier");
   const cicdRunDir = path.join(appMetierRoot, "CICD-run");
+  const cicdBackDir = path.join(appMetierRoot, "CICD-back");
   const sshPassword = (req.body?.sshPassword as string) || process.env.DEPLOY_SSH_PASSWORD || undefined;
   const sudoPassword = (req.body?.sudoPassword as string) || process.env.DEPLOY_SUDO_PASSWORD || undefined;
   const userVM = process.env.USER_VM || undefined;;
   const ipVM = process.env.IP_VM || undefined;;
   const sshTarget = `${userVM}@${ipVM}`;
 
-  console.log("--- DEBUG DEPLOIEMENT ---");
-  console.log("Chemin absolu calculé :", appMetierRoot);
-  console.log("Le dossier existe-t-il ? :", fs.existsSync(appMetierRoot));
-  console.log("--------------------------");
-
-  const cicdBackDir = path.join(appMetierRoot, "CICD-back");
 
   // Créer un objet Build au début du déploiement
   const deploymentId = new mongoose.Types.ObjectId().toString();
@@ -164,7 +148,7 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
   const imageTag = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
   const images = [`cicd-plateform-backend:${imageTag}`, `cicd-plateform-frontend:${imageTag}`];
   const userId = (req as any).user?.id;
-  
+
   let buildId: string | null = null;
 
   try {
@@ -177,11 +161,11 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
       logs: [`Déploiement démarré à ${new Date().toISOString()}`],
       user: userId,
     });
-    
+
     buildId = build._id.toString();
     io?.emit('deploy-log', `🚀 Build créé avec ID: ${buildId}\n`);
     io?.emit('deploy-log', `📦 Images à déployer: ${images.join(', ')}\n`);
-    
+
   } catch (error: any) {
     console.error("Erreur lors de la création du build:", error);
     io?.emit('deploy-log', `❌ Erreur lors de la création du build: ${error.message}\n`);
@@ -207,7 +191,13 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
     {
       folder: cicdBackDir,
       cmd: process.platform === "win32" ? "mvn.cmd" : "mvn",
-      args: ["test"]
+      args: [
+        "verify",
+        "sonar:sonar",
+        `-Dsonar.token=${process.env.SONAR_TOKEN}`,
+        "-Dsonar.host.url=http://localhost:9000",
+        "-Dsonar.projectKey=tuto-backend"
+      ]
     },
     {
       folder: cicdRunDir,
@@ -294,7 +284,7 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
   async function markBuildFailed(errorMessage: string) {
     if (buildId) {
       try {
-        await Build.findByIdAndUpdate(buildId, { 
+        await Build.findByIdAndUpdate(buildId, {
           status: BuildStatus.FAILED,
           $push: { logs: `❌ Échec: ${errorMessage}` }
         });
@@ -308,7 +298,7 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
   async function markBuildSuccess() {
     if (buildId) {
       try {
-        await Build.findByIdAndUpdate(buildId, { 
+        await Build.findByIdAndUpdate(buildId, {
           status: BuildStatus.SUCCESS,
           $push: { logs: `✅ Déploiement terminé avec succès à ${new Date().toISOString()}` }
         });
@@ -325,17 +315,14 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
 
       if (!fs.existsSync(task.folder)) {
         const msg = `⚠️ ERREUR : Le dossier est introuvable : ${task.folder}\n`;
-        console.error(msg);
         io?.emit('deploy-log', msg);
         await markBuildFailed(`Dossier introuvable: ${task.folder}`);
-        // On s'arrête si le dossier n'existe pas
         return res.status(500).json({ error: "Dossier cible introuvable", path: task.folder });
       }
 
       if (task.type === 'dockerTransfer') {
         transferDockerImageViaSSH({ image: task.image, sshTarget: task.sshTarget, useSudo: task.useSudo, cwd: task.folder, sshPassword: task.sshPassword, sudoPassword: task.sudoPassword }, async (error) => {
           if (error) {
-            console.error(error);
             io?.emit('deploy-log', `❌ Erreur critique: ${error.message}\n`);
             await markBuildFailed(error.message);
             return res.status(500).json({ error: "Échec du déploiement", details: error.message });
@@ -360,7 +347,6 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
       } else if (task.type === 'remoteCommand') {
         executeRemoteCommand({ sshTarget: task.sshTarget, command: task.command, cwd: task.folder, sshPassword: task.sshPassword }, async (error) => {
           if (error) {
-            console.error(error);
             io?.emit('deploy-log', `❌ Erreur critique: ${error.message}\n`);
             await markBuildFailed(error.message);
             return res.status(500).json({ error: "Échec du déploiement", details: error.message });
@@ -371,7 +357,6 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
       } else if (task.type === 'copyFile') {
         copyFileToRemote({ sshTarget: task.sshTarget, localFile: task.localFile, remotePath: task.remotePath, cwd: task.folder, sshPassword: task.sshPassword }, async (error) => {
           if (error) {
-            console.error(error);
             io?.emit('deploy-log', `❌ Erreur critique: ${error.message}\n`);
             await markBuildFailed(error.message);
             return res.status(500).json({ error: "Échec du déploiement", details: error.message });
@@ -382,7 +367,6 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
       } else {
         runCommand(task.cmd, task.args, task.folder, async (error) => {
           if (error) {
-            console.error(error);
             io?.emit('deploy-log', `❌ Erreur critique: ${error.message}\n`);
             await markBuildFailed(error.message);
             return res.status(500).json({ error: "Échec du déploiement", details: error.message });
@@ -391,11 +375,10 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
           next();
         });
       }
-
     } else {
       await markBuildSuccess();
       io?.emit('deploy-log', `✅ Déploiement terminé avec succès.\n`);
-      res.json({ 
+      res.json({
         message: "Déploiement terminé",
         buildId: buildId,
         deploymentId: deploymentId
@@ -459,7 +442,7 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
 
     async function markBuildFailed(errorMessage: string) {
       try {
-        await Build.findByIdAndUpdate(newBuildId, { 
+        await Build.findByIdAndUpdate(newBuildId, {
           status: BuildStatus.FAILED,
           $push: { logs: `❌ Échec: ${errorMessage}` }
         });
@@ -471,7 +454,7 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
 
     async function markBuildSuccess() {
       try {
-        await Build.findByIdAndUpdate(newBuildId, { 
+        await Build.findByIdAndUpdate(newBuildId, {
           status: BuildStatus.SUCCESS,
           $push: { logs: `✅ Redéploiement terminé avec succès à ${new Date().toISOString()}` }
         });
@@ -483,17 +466,17 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
 
     // Vérifier si les images existent sur la VM pour éviter le transfert inutile
     let needsTransfer = true;
-    
+
     // Tâche de vérification des images sur la VM
     const checkImagesCommand = `docker image inspect ${images[0]} ${images[1]} > /dev/null 2>&1 && echo "EXISTS" || echo "MISSING"`;
-    
+
     io?.emit('deploy-log', `🔍 Vérification de l'existence des images sur la VM...\n`);
-    
-    executeRemoteCommand({ 
-      sshTarget: sshTarget, 
-      command: checkImagesCommand, 
-      cwd: cicdRunDir, 
-      sshPassword: sshPassword 
+
+    executeRemoteCommand({
+      sshTarget: sshTarget,
+      command: checkImagesCommand,
+      cwd: cicdRunDir,
+      sshPassword: sshPassword
     }, async (error) => {
       if (error) {
         io?.emit('deploy-log', `ℹ️ Images non trouvées sur la VM, transfert nécessaire\n`);
@@ -503,10 +486,10 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
         needsTransfer = false;
       }
       await updateBuildLog(needsTransfer ? `Images non présentes sur VM, transfert requis` : `Images déjà sur VM, skip transfert`);
-      
+
       // Construire les tâches en fonction de la présence des images
       const tasks = [];
-      
+
       // Si les images doivent être transférées
       if (needsTransfer) {
         tasks.push(
@@ -530,7 +513,7 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
           }
         );
       }
-      
+
       // Tâches communes (toujours exécutées)
       tasks.push(
         {
@@ -569,7 +552,7 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
           sshPassword
         }
       );
-      
+
       let taskIndex = 0;
 
       async function next() {
@@ -637,7 +620,7 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
       } else {
         markBuildSuccess().then(() => {
           io?.emit('deploy-log', `✅ Redéploiement terminé avec succès.\n`);
-          res.json({ 
+          res.json({
             message: "Redéploiement terminé",
             buildId: newBuildId,
             deploymentId: newDeploymentId,
