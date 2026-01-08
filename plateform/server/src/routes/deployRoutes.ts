@@ -327,11 +327,16 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
   async function markBuildSuccess() {
     if (buildId) {
       try {
+        // Unmark all previous builds as deployed
+        await Build.updateMany({ isDeployed: true }, { isDeployed: false });
+
+        // Mark this build as successful and deployed
         await Build.findByIdAndUpdate(buildId, {
           status: BuildStatus.SUCCESS,
+          isDeployed: true,
           $push: { logs: `✅ Déploiement terminé avec succès à ${new Date().toISOString()}` }
         });
-        io?.emit('deploy-log', `📊 Build ${buildId} marqué comme réussi\n`);
+        io?.emit('deploy-log', `📊 Build ${buildId} marqué comme réussi et déployé\n`);
       } catch (error) {
         console.error("Erreur lors de la mise à jour du build:", error);
       }

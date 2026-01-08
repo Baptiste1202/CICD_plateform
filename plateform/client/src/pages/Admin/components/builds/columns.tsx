@@ -68,6 +68,7 @@ export const getColumns = (t: TFunction<"translation">, callback: (action: strin
         ),
         cell: ({ row }) => {
             const value = row.getValue("status") as string;
+            const isDeployed = row.original.isDeployed;
             const badgeStyles: Record<string, string> = {
                 pending: "bg-muted text-muted-foreground border-none",
                 running: "bg-black text-white dark:bg-white dark:text-black",
@@ -76,9 +77,16 @@ export const getColumns = (t: TFunction<"translation">, callback: (action: strin
             };
 
             return (
-                <Badge className={cn("rounded-md px-2 py-0.5 uppercase text-[10px] tracking-widest", badgeStyles[value])}>
-                    {t(`pages.admin.build_page.status_${value}`)}
-                </Badge>
+                <div className="flex items-center gap-2">
+                    <Badge className={cn("rounded-md px-2 py-0.5 uppercase text-[10px] tracking-widest", badgeStyles[value])}>
+                        {t(`pages.admin.build_page.status_${value}`)}
+                    </Badge>
+                    {isDeployed && (
+                        <Badge className="rounded-md px-2 py-0.5 uppercase text-[10px] tracking-widest bg-green-500 text-white">
+                            {t("pages.admin.build_page.deployed") || "Déployé"}
+                        </Badge>
+                    )}
+                </div>
             );
         },
     },
@@ -118,14 +126,18 @@ export const getColumns = (t: TFunction<"translation">, callback: (action: strin
         header: () => <div className="text-right font-bold">{t("pages.admin.build_page.actions") || "Actions"}</div>,
         cell: ({ row }) => {
             const build = row.original;
+            const isDeployed = build.isDeployed;
+            const isRunning = build.status === "running";
+
             return (
                 <div className="flex justify-end gap-2">
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => callback("redeploy", build)}
-                        disabled={build.status === "running"}
+                        disabled={isRunning || isDeployed}
                         className="gap-1 h-8"
+                        title={isDeployed ? "Ce build est actuellement déployé" : ""}
                     >
                         <RotateCw className="w-3 h-3" />
                         {t("pages.admin.build_page.redeploy") || "Redéployer"}
@@ -134,7 +146,9 @@ export const getColumns = (t: TFunction<"translation">, callback: (action: strin
                         variant="destructive"
                         size="sm"
                         onClick={() => callback("delete", build)}
+                        disabled={isDeployed}
                         className="gap-1h-8 w-8 p-0"
+                        title={isDeployed ? "Ce build est actuellement déployé" : ""}
                     >
                         <Trash2 className="w-3 h-3" />
                     </Button>

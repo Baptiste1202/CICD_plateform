@@ -16,6 +16,7 @@ export interface IBuild extends Document {
   image: string;
   images?: string[]; // Liste des images déployées (backend, frontend, etc.)
   deploymentId?: string; // ID unique du déploiement
+  isDeployed?: boolean; // Indique si ce build est actuellement déployé sur la VM
   logs: string[];
   createdAt: Date;
   updatedAt: Date;

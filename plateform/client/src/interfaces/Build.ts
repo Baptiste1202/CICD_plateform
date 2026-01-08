@@ -1,4 +1,4 @@
-import {UserInterface} from "@/interfaces/User";
+import { UserInterface } from "@/interfaces/User";
 
 export type BuildStatus = 'pending' | 'running' | 'success' | 'failed';
 
@@ -9,6 +9,7 @@ export interface BuildInterface {
     image: string;
     images?: string[];
     deploymentId?: string;
+    isDeployed?: boolean;
     logs?: string[];
     createdAt: string;
     updatedAt?: string;
