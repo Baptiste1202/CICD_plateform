@@ -168,7 +168,7 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), (req, res) => {
     {
       folder: appMetierRoot,
       cmd: "git",
-      args: ["submodule", "update", "--init", "--recursive", "--remote"]
+      args: ["submodule", "update", "--init", "--recursive", "--remote", "--force"]
     },
     {
       folder: cicdBackDir,
