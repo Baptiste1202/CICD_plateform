@@ -66,13 +66,13 @@ export const Builds = () => {
             <h1 className="text-3xl font-black uppercase tracking-tight">
               {t("pages.admin.builds")}
             </h1>
-            <p className="text-muted-foreground text-sm font-medium">
+            <p className="text-muted-foreground text-sm font-medium italic">
               {t("pages.admin.build_page.subtitle") || "Manage your project deployments"}
             </p>
           </div>
         </div>
 
-        <div className="rounded-xl border-2 border-border bg-card overflow-hidden">
+        <div className="rounded-xl border-2 border-border bg-card overflow-hidden shadow-none transition-all">
           <DataTable
               columns={getColumns(t, callback)}
               data={builds}

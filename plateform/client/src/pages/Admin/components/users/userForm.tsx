@@ -85,10 +85,10 @@ export const UserForm = ({ dialog, refresh, action, user }: UserFormProps) => {
                                 <FormControl>
                                     <Input
                                         {...field}
-                                        className="border-2 focus-visible:ring-foreground rounded-md font-mono"
+                                        className="border-2 border-border focus-visible:ring-primary focus-visible:border-transparent rounded-xl font-mono font-bold"
                                     />
                                 </FormControl>
-                                <FormMessage className="text-xs font-bold" />
+                                <FormMessage className="text-xs font-bold text-destructive" />
                             </FormItem>
                         )}
                     />
@@ -102,25 +102,29 @@ export const UserForm = ({ dialog, refresh, action, user }: UserFormProps) => {
                                 </FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <SelectTrigger className="border-2 focus:ring-foreground font-bold">
+                                        <SelectTrigger className="border-2 border-border focus:ring-primary rounded-xl font-bold">
                                             <SelectValue />
                                         </SelectTrigger>
                                     </FormControl>
-                                    <SelectContent className="border-2 border-border">
-                                        <SelectItem value="user" className="font-medium focus:bg-black focus:text-white">{t("pages.admin.users_page.form.user")}</SelectItem>
-                                        <SelectItem value="admin" className="font-medium focus:bg-black focus:text-white">{t("pages.admin.users_page.form.admin")}</SelectItem>
+                                    <SelectContent className="border-2 border-border rounded-xl">
+                                        <SelectItem value="user" className="font-bold focus:bg-primary focus:text-primary-foreground cursor-pointer">
+                                            {t("pages.admin.users_page.form.user")}
+                                        </SelectItem>
+                                        <SelectItem value="admin" className="font-bold focus:bg-primary focus:text-primary-foreground cursor-pointer">
+                                            {t("pages.admin.users_page.form.admin")}
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <FormDescription className="text-[10px] italic leading-tight">
-                                    {t("pages.admin.users_page.form.role_description") || "Le rôle définit les permissions d'accès au dashboard."}
+                                <FormDescription className="text-[10px] italic leading-tight opacity-70">
+                                    {t("pages.admin.users_page.form.role_description")}
                                 </FormDescription>
-                                <FormMessage className="text-xs font-bold" />
+                                <FormMessage className="text-xs font-bold text-destructive" />
                             </FormItem>
                         )}
                     />
                     <Button
                         type="submit"
-                        className="w-full bg-foreground text-background hover:bg-foreground/90 font-black uppercase tracking-widest py-6 rounded-md transition-all active:scale-95"
+                        className="w-full bg-primary text-primary-foreground hover:opacity-90 font-black uppercase tracking-widest py-6 rounded-xl transition-all active:scale-95 shadow-[0_10px_20px_rgba(var(--primary),0.2)]"
                         disabled={loading}
                     >
                         {loading ? <span className="animate-pulse">...</span> : t("pages.admin.users_page.form.update")}
@@ -146,9 +150,12 @@ export const UserForm = ({ dialog, refresh, action, user }: UserFormProps) => {
                                     <Input
                                         placeholder='Type "delete"'
                                         {...field}
-                                        className="border-2 border-destructive/20 focus-visible:ring-destructive rounded-md font-mono"
+                                        className="border-2 border-destructive/20 focus-visible:ring-destructive rounded-xl font-mono font-bold text-destructive"
                                     />
                                 </FormControl>
+                                <FormDescription className="text-[10px] font-bold">
+                                    {t("Confirmation requise")}
+                                </FormDescription>
                                 <FormMessage className="text-xs font-bold" />
                             </FormItem>
                         )}
@@ -156,7 +163,7 @@ export const UserForm = ({ dialog, refresh, action, user }: UserFormProps) => {
                     <Button
                         type="submit"
                         variant="destructive"
-                        className="w-full font-black uppercase tracking-widest py-6 rounded-md transition-all active:scale-95"
+                        className="w-full font-black uppercase tracking-widest py-6 rounded-xl transition-all active:scale-95"
                         disabled={loading}
                     >
                         {t("pages.admin.users_page.form.delete")}

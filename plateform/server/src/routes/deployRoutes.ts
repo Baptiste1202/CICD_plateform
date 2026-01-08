@@ -9,7 +9,7 @@ import { io } from "../sockets/socket.js";
 import { Build } from "../models/buildModel.js";
 import { BuildStatus } from "../interfaces/IBuild.js";
 import mongoose from "mongoose";
-
+import { Config } from "../models/configModel.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 

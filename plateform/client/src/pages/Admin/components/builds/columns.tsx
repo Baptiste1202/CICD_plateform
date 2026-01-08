@@ -71,18 +71,18 @@ export const getColumns = (t: TFunction<"translation">, callback: (action: strin
             const isDeployed = row.original.isDeployed;
             const badgeStyles: Record<string, string> = {
                 pending: "bg-muted text-muted-foreground border-none",
-                running: "bg-black text-white dark:bg-white dark:text-black",
-                success: "border-2 border-black dark:border-white bg-transparent text-foreground font-bold",
+                running: "bg-primary text-primary-foreground animate-pulse shadow-[0_0_10px_rgba(var(--primary),0.2)]",
+                success: "border-2 border-primary bg-transparent text-foreground font-black",
                 failed: "bg-destructive text-destructive-foreground",
             };
 
             return (
                 <div className="flex items-center gap-2">
-                    <Badge className={cn("rounded-md px-2 py-0.5 uppercase text-[10px] tracking-widest", badgeStyles[value])}>
+                    <Badge className={cn("rounded-md px-2 py-0.5 uppercase text-[10px] tracking-widest transition-colors", badgeStyles[value])}>
                         {t(`pages.admin.build_page.status_${value}`)}
                     </Badge>
                     {isDeployed && (
-                        <Badge className="rounded-md px-2 py-0.5 uppercase text-[10px] tracking-widest bg-green-500 text-white">
+                        <Badge className="rounded-md px-2 py-0.5 uppercase text-[10px] tracking-widest bg-success text-success-foreground border-none">
                             {t("pages.admin.build_page.deployed") || "Déployé"}
                         </Badge>
                     )}

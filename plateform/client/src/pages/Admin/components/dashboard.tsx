@@ -45,8 +45,8 @@ export const Dashboard = () => {
 
     if (loading) {
         return (
-            <div className="flex h-screen w-full items-center justify-center">
-                <Loader2 className="h-10 w-10 animate-spin text-foreground" />
+            <div className="flex h-screen w-full items-center justify-center bg-background">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>
         );
     }
@@ -55,40 +55,61 @@ export const Dashboard = () => {
         <div className="flex flex-col h-full max-h-screen overflow-hidden bg-background p-4 gap-4">
             <div className="flex items-center justify-between border-b-2 border-border pb-2 shrink-0">
                 <div className="flex items-center gap-2">
-                    <LayoutDashboard className="w-5 h-5" />
-                    <h1 className="text-3xl font-black uppercase tracking-tighter">Dashboard CI/CD</h1>
+                    <LayoutDashboard className="w-5 h-5 text-primary" />
+                    <h1 className="text-3xl font-black uppercase tracking-tighter italic">
+                        Dashboard CI/CD
+                    </h1>
                 </div>
             </div>
 
             <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 shrink-0">
-                <Card className="border-2 border-border shadow-none rounded-xl">
+                <Card className="border-2 border-border shadow-none rounded-xl bg-card">
                     <CardHeader className="p-3 pb-0 space-y-0 flex flex-row items-center justify-between">
-                        <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Utilisateurs Totaux</CardTitle>
-                        <Users className="w-3.5 h-3.5" />
+                        <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+                            Utilisateurs Totaux
+                        </CardTitle>
+                        <Users className="w-3.5 h-3.5 opacity-50" />
                     </CardHeader>
                     <CardContent className="p-3 pt-1">
                         <p className="text-2xl font-black">{stats.users}</p>
-                            <p className="text-xs text-muted-foreground mt-1">Membres enregistrés</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1 tracking-tight">
+                            Membres enregistrés
+                        </p>
                     </CardContent>
                 </Card>
 
-                <Card className={cn("border-2 shadow-none rounded-xl", stats.activeBuilds > 0 ? "bg-black text-white" : "bg-card")}>
+                <Card className={cn(
+                    "border-2 shadow-none rounded-xl transition-all duration-500",
+                    stats.activeBuilds > 0
+                        ? "bg-primary text-primary-foreground border-transparent shadow-[0_0_20px_rgba(var(--primary),0.3)]"
+                        : "bg-card border-border"
+                )}>
                     <CardHeader className="p-3 pb-0 space-y-0 flex flex-row items-center justify-between">
-                        <CardTitle className="text-[9px] font-black uppercase tracking-widest opacity-70">Builds Actifs</CardTitle>
-                        <Activity className="w-3.5 h-3.5" />
+                        <CardTitle className={cn(
+                            "text-[9px] font-black uppercase tracking-widest",
+                            stats.activeBuilds > 0 ? "text-primary-foreground" : "text-muted-foreground"
+                        )}>
+                            Builds Actifs
+                        </CardTitle>
+                        <Activity className={cn(
+                            "w-3.5 h-3.5",
+                            stats.activeBuilds > 0 ? "animate-pulse" : "opacity-50"
+                        )} />
                     </CardHeader>
                     <CardContent className="p-3 pt-1">
                         <div className="text-2xl font-black">{stats.activeBuilds}</div>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className={cn(
+                            "text-[10px] font-bold uppercase mt-1 tracking-tight",
+                            stats.activeBuilds > 0 ? "text-primary-foreground/80" : "text-muted-foreground"
+                        )}>
                             {stats.activeBuilds > 0 ? "Processus en cours" : "Aucune activité"}
                         </p>
                     </CardContent>
                 </Card>
             </div>
 
+            {/* Zone Pipeline */}
             <div className="flex-1 min-h-0 border-t-2 border-border pt-4 flex flex-col overflow-hidden">
-                <div className="mb-2 shrink-0">
-                </div>
                 <div className="flex-1 min-h-0 pb-2">
                     <PipelineView />
                 </div>

@@ -3,6 +3,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/pages/Admin/sidebar/app-sidebar";
 import { useAuthContext } from "@/contexts/authContext";
 import { Separator } from "@/components/ui/separator";
+import { useTranslation } from "react-i18next";
 
 interface LayoutWrapperProps {
     withLayout?: boolean;
@@ -10,6 +11,7 @@ interface LayoutWrapperProps {
 
 export const LayoutWrapper = ({ withLayout = true }: LayoutWrapperProps) => {
     const { authUser } = useAuthContext();
+    const { t } = useTranslation();
 
     if (!withLayout || !authUser) {
         return (
@@ -23,19 +25,28 @@ export const LayoutWrapper = ({ withLayout = true }: LayoutWrapperProps) => {
         <SidebarProvider>
             <AppSidebar />
 
-            <SidebarInset className="bg-slate-50/50 dark:bg-transparent">
-                <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-background transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-                    <div className="flex items-center gap-2 px-4">
-                        <SidebarTrigger className="-ml-1" />
-                        <Separator orientation="vertical" className="mr-2 h-4" />
-                        <h1 className="text-sm font-semibold tracking-tight uppercase text-muted-foreground">
-                            Espace projet {authUser.forename} {authUser.name}
-                        </h1>
+            <SidebarInset className="bg-background">
+                <header className="flex h-16 shrink-0 items-center gap-2 border-b-2 border-border px-6 bg-background/80 backdrop-blur-md sticky top-0 z-50 transition-all group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-14">
+                    <div className="flex items-center gap-4 w-full">
+                        {/* Trigger avec effet de survol primary */}
+                        <SidebarTrigger className="-ml-1 hover:text-primary transition-colors duration-300" />
+
+                        <Separator orientation="vertical" className="h-4 bg-border w-[2px]" />
+
+                        <div className="flex flex-col">
+                            <h1 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground italic">
+                                {t("pages.layout.workspace") || "Console de pilotage"}
+                            </h1>
+                            <span className="text-[12px] font-bold tracking-tighter">
+                                {authUser.forename} {authUser.name}
+                            </span>
+                        </div>
+
                     </div>
                 </header>
 
-                <main className="flex flex-1 flex-col gap-4 p-4 pt-0 overflow-y-auto">
-                    <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min p-4">
+                <main className="flex flex-1 flex-col overflow-y-auto">
+                    <div className="flex-1 min-h-0">
                         <Outlet />
                     </div>
                 </main>

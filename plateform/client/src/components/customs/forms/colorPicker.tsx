@@ -228,7 +228,11 @@ export default function ColorPicker({ value = "#3B82F6", onChange, className, di
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-50 p-6">
+          <div className={cn(
+              "absolute top-full left-0 right-0 mt-2 z-50 p-6",
+              "bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl",
+              "max-h-[350px] overflow-y-auto custom-scrollbar"
+          )}>
           <div className="flex items-center gap-2 mb-6">
             <div className="flex-1">
               <label className="block text-sm font-medium text-black dark:text-white mb-2">{t("components.colorPicker.hex_color")}</label>

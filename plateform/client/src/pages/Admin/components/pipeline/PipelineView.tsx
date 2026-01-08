@@ -197,69 +197,71 @@ export const PipelineView = () => {
 
     return (
         <Card className="h-full border-2 border-border bg-card rounded-xl overflow-hidden shadow-none flex flex-col">
-            <CardHeader className="flex flex-row items-center justify-between border-b-2 border-border bg-muted/20 p-3 shrink-0">
+            <CardHeader className="flex flex-row items-center justify-between border-b-2 border-border bg-muted/10 p-3 shrink-0">
                 <div className="flex items-center gap-2">
-                    <Terminal className="w-4 h-4" />
+                    <Terminal className="w-4 h-4 text-primary" />
                     <CardTitle className="text-[10px] font-black uppercase tracking-tight italic">Console de Déploiement</CardTitle>
                 </div>
                 <div className="flex gap-2">
                     <Button
                         onClick={startDeploy}
                         disabled={loading}
-                        className="h-8 text-[9px] px-4 font-bold uppercase tracking-widest bg-black text-white hover:opacity-90 transition-all"
+                        className="h-8 text-[9px] px-4 font-bold uppercase tracking-widest bg-primary text-primary-foreground hover:opacity-90 transition-all active:scale-95 shadow-[0_0_15px_rgba(var(--primary),0.2)]"
                     >
                         {loading ? <Loader2 className="animate-spin h-3 w-3 mr-1" /> : <Play className="h-3 w-3 mr-1 fill-current" />}
                         {loading ? "Running..." : "Execute"}
                     </Button>
-                    {loading && buildId && !isPaused && (
-                        <Button
-                            onClick={pauseDeploy}
-                            variant="outline"
-                            className="h-8 text-[9px] px-4 font-bold uppercase tracking-widest"
-                        >
-                            <Pause className="h-3 w-3 mr-1" />
-                            Pause
-                        </Button>
-                    )}
-                    {loading && buildId && isPaused && (
-                        <Button
-                            onClick={resumeDeploy}
-                            variant="outline"
-                            className="h-8 text-[9px] px-4 font-bold uppercase tracking-widest"
-                        >
-                            <Play className="h-3 w-3 mr-1" />
-                            Resume
-                        </Button>
-                    )}
+
                     {loading && buildId && (
-                        <Button
-                            onClick={cancelDeploy}
-                            variant="destructive"
-                            className="h-8 text-[9px] px-4 font-bold uppercase tracking-widest"
-                        >
-                            <XCircle className="h-3 w-3 mr-1" />
-                            Cancel
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button
+                                onClick={isPaused ? resumeDeploy : pauseDeploy}
+                                variant="outline"
+                                className="h-8 text-[9px] px-4 font-bold uppercase tracking-widest border-2 border-border hover:border-primary transition-colors"
+                            >
+                                {isPaused ? <Play className="h-3 w-3 mr-1" /> : <Pause className="h-3 w-3 mr-1" />}
+                                {isPaused ? "Resume" : "Pause"}
+                            </Button>
+                            <Button
+                                onClick={cancelDeploy}
+                                variant="destructive"
+                                className="h-8 text-[9px] px-4 font-bold uppercase tracking-widest border-2 border-destructive"
+                            >
+                                <XCircle className="h-3 w-3 mr-1" />
+                                Cancel
+                            </Button>
+                        </div>
                     )}
                 </div>
             </CardHeader>
 
             <CardContent className="p-2 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-
+                {/* Visualisation des étapes */}
                 <div className="p-4 md:col-span-4 flex flex-col space-y-8 ">
                     {steps.map((step, idx) => {
                         const isDone = idx < currentStepIndex || status === "success";
                         const isCurrent = idx === currentStepIndex && status !== "success";
+
                         return (
                             <div key={step.id} className="flex items-center gap-4 relative">
                                 {idx !== steps.length - 1 && (
-                                    <div className={cn("absolute left-[13px] top-8 w-[1px] h-8 transition-colors duration-500", isDone ? "bg-black" : "bg-muted")} />
+                                    <div className={cn(
+                                        "absolute left-[13px] top-8 w-[1px] h-8 transition-colors duration-500",
+                                        isDone ? "bg-primary" : "bg-muted"
+                                        )} />
                                 )}
-                                <div className={cn("w-7 h-7 rounded-full flex items-center justify-center border-2 text-[10px] transition-all duration-500 z-10 bg-background",
-                                    isDone ? "bg-black border-black text-white" : isCurrent ? "border-black animate-pulse" : "border-muted text-muted")}>
+                                <div className={cn(
+                                    "w-7 h-7 rounded-full flex items-center justify-center border-2 text-[10px] transition-all duration-500 z-10 bg-background font-black",
+                                    isDone ? "bg-primary border-primary text-primary-foreground shadow-[0_0_10px_rgba(var(--primary),0.4)]" :
+                                    isCurrent ? "border-primary text-primary animate-pulse" :
+                                    "border-muted text-muted"
+                                    )}>
                                     {isDone ? <CheckCircle className="w-4 h-4" /> : idx + 1}
                                 </div>
-                                <span className={cn("text-[11px] font-black uppercase tracking-widest", isCurrent || isDone ? "text-foreground" : "text-muted-foreground/40")}>
+                                <span className={cn(
+                                    "text-[11px] font-black uppercase tracking-widest transition-colors",
+                                    isCurrent ? "text-primary" : isDone ? "text-foreground" : "text-muted-foreground/40"
+                                )}>
                                     {step.label}
                                 </span>
                             </div>
@@ -267,24 +269,27 @@ export const PipelineView = () => {
                     })}
                 </div>
 
+                {/* Sortie Terminal */}
                 <div className="md:col-span-8 flex flex-col min-w-0">
-                    <span className="text-[8px] font-black uppercase mb-2 opacity-50 italic shrink-0">
-                        Live Terminal Output
+                    <span className="text-[8px] font-black uppercase mb-2 opacity-50 italic shrink-0 flex items-center gap-2">
+                        <Circle className="w-1.5 h-1.5 fill-primary animate-pulse" /> Live Terminal Output
                     </span>
                     <div
                         ref={scrollRef}
                         className={cn(
                             "h-[300px] bg-black text-green-400 p-5 rounded-xl font-mono text-[10px]",
-                            "overflow-y-auto overflow-x-hidden border-2 border-border shadow-2xl",
-                            "leading-relaxed whitespace-pre-wrap scrollbar-thin scrollbar-thumb-white/20"
-                        )}
+                            "overflow-y-auto overflow-x-hidden border-2 border-border shadow-2xl transition-all",
+                            "leading-relaxed whitespace-pre-wrap scrollbar-thin scrollbar-thumb-white/20",
+                            loading && "border-primary/30"
+                            )}
                     >
                         {logs.map((log, i) => (
                             <div key={i} className="mb-1 border-l border-white/10 pl-3 break-words">
+                                <span className="text-white/30 mr-2">[{i}]</span>
                                 {log}
                             </div>
                         ))}
-                        {loading && <div className="animate-pulse text-white mt-1">_</div>}
+                        {loading && <div className="animate-pulse text-primary mt-1">_</div>}
                         <div className="h-2" />
                     </div>
                 </div>
