@@ -85,7 +85,6 @@ export const getColumns = (t: TFunction<"translation">, callback: (action: strin
             variant="destructive"
             size="sm"
             onClick={() => callback("delete", build)}
-            disabled={build.status === "running"}
             className="gap-1"
           >
             <Trash2 className="w-3 h-3" />

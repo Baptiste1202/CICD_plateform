@@ -15,7 +15,15 @@ const __dirname = dirname(__filename);
 
 export const deployRoutes = express.Router();
 
-function runCommand(command: string, args: string[], cwd: string, callback: (error?: any) => void) {
+// Global map to track pipeline control states for cancellation
+const pipelineControls = new Map<string, {
+  paused: boolean;
+  cancelled: boolean;
+  currentProcess?: any;
+}>();
+
+
+function runCommand(command: string, args: string[], cwd: string, buildId: string, callback: (error?: any) => void) {
   io?.emit('deploy-log', `> [${path.basename(cwd)}] ${command} ${args.join(' ')}\n`);
 
   const env = {
@@ -25,10 +33,22 @@ function runCommand(command: string, args: string[], cwd: string, callback: (err
 
   const child = spawn(command, args, { cwd, shell: true, env });
 
+  // Store process reference for cancellation
+  const control = pipelineControls.get(buildId);
+  if (control) {
+    control.currentProcess = child;
+  }
+
   child.stdout.on('data', (data) => io?.emit('deploy-log', data.toString()));
   child.stderr.on('data', (data) => io?.emit('deploy-log', `LOG: ${data.toString()}`));
 
   child.on('close', (code) => {
+    // Check if cancelled
+    if (control?.cancelled) {
+      callback(new Error('Pipeline cancelled by user'));
+      return;
+    }
+
     if (code !== 0) {
       callback(new Error(`La commande a échoué avec le code ${code}`));
     } else {
@@ -163,6 +183,10 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
     });
 
     buildId = build._id.toString();
+
+    // Initialize pipeline control state
+    pipelineControls.set(buildId, { paused: false, cancelled: false });
+
     io?.emit('deploy-log', `🚀 Build créé avec ID: ${buildId}\n`);
     io?.emit('deploy-log', `📦 Images à déployer: ${images.join(', ')}\n`);
 
@@ -315,6 +339,43 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
   }
 
   async function next() {
+    // Check if pipeline has been cancelled
+    const control = pipelineControls.get(buildId!);
+    if (control?.cancelled) {
+      await Build.findByIdAndUpdate(buildId, {
+        status: BuildStatus.CANCELLED,
+        $push: { logs: `🛑 Pipeline cancelled at ${new Date().toISOString()}` }
+      });
+      io?.emit('deploy-log', `🛑 Pipeline cancelled by user\n`);
+      pipelineControls.delete(buildId!);
+      return res.status(200).json({ message: "Pipeline cancelled" });
+    }
+
+    // Check if pipeline has been paused
+    if (control?.paused) {
+      io?.emit('deploy-log', `⏸️ Pipeline paused\n`);
+      await Build.findByIdAndUpdate(buildId, { status: BuildStatus.PAUSED });
+
+      // Wait for resume
+      await new Promise<void>((resolve) => {
+        const checkInterval = setInterval(() => {
+          const currentControl = pipelineControls.get(buildId!);
+          if (!currentControl?.paused || currentControl?.cancelled) {
+            clearInterval(checkInterval);
+            resolve();
+          }
+        }, 500);
+      });
+
+      // Check if cancelled while paused
+      if (control?.cancelled) {
+        return;
+      }
+
+      io?.emit('deploy-log', `▶️ Pipeline resumed\n`);
+      await Build.findByIdAndUpdate(buildId, { status: BuildStatus.RUNNING });
+    }
+
     if (index < tasks.length) {
       const task = tasks[index++];
 
@@ -370,7 +431,7 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
           next();
         });
       } else {
-        runCommand(task.cmd, task.args, task.folder, async (error) => {
+        runCommand(task.cmd, task.args, task.folder, buildId!, async (error) => {
           if (error) {
             io?.emit('deploy-log', `❌ Erreur critique: ${error.message}\n`);
             await markBuildFailed(error.message);
@@ -382,6 +443,7 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
       }
     } else {
       await markBuildSuccess();
+      pipelineControls.delete(buildId!); // Cleanup control state
       io?.emit('deploy-log', `✅ Déploiement terminé avec succès.\n`);
       res.json({
         message: "Déploiement terminé",
@@ -644,3 +706,126 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
     return res.status(500).json({ error: "Erreur lors du redéploiement", details: error.message });
   }
 });
+
+// Pause a running pipeline
+deployRoutes.post("/pause/:buildId", verifyToken({ role: "admin" }), async (req, res) => {
+  const { buildId } = req.params;
+
+  try {
+    const control = pipelineControls.get(buildId);
+
+    if (!control) {
+      return res.status(404).json({ error: "Pipeline not found or already completed" });
+    }
+
+    if (control.paused) {
+      return res.status(400).json({ error: "Pipeline is already paused" });
+    }
+
+    // Mark as paused
+    control.paused = true;
+    io?.emit('deploy-log', `⏸️ Pause requested by user\n`);
+
+    res.json({ message: "Pipeline pause requested" });
+  } catch (error: any) {
+    console.error("Error pausing pipeline:", error);
+    res.status(500).json({ error: "Failed to pause pipeline", details: error.message });
+  }
+});
+
+// Resume a paused pipeline
+deployRoutes.post("/resume/:buildId", verifyToken({ role: "admin" }), async (req, res) => {
+  const { buildId } = req.params;
+
+  try {
+    const control = pipelineControls.get(buildId);
+
+    if (!control) {
+      return res.status(404).json({ error: "Pipeline not found or already completed" });
+    }
+
+    if (!control.paused) {
+      return res.status(400).json({ error: "Pipeline is not paused" });
+    }
+
+    // Mark as resumed
+    control.paused = false;
+    io?.emit('deploy-log', `▶️ Resume requested by user\n`);
+
+    res.json({ message: "Pipeline resume requested" });
+  } catch (error: any) {
+    console.error("Error resuming pipeline:", error);
+    res.status(500).json({ error: "Failed to resume pipeline", details: error.message });
+  }
+});
+
+// Cancel a running pipeline
+deployRoutes.post("/cancel/:buildId", verifyToken({ role: "admin" }), async (req, res) => {
+  const { buildId } = req.params;
+
+  try {
+    const control = pipelineControls.get(buildId);
+
+    if (!control) {
+      return res.status(404).json({ error: "Pipeline not found or already completed" });
+    }
+
+    // Mark as cancelled
+    control.cancelled = true;
+
+    // Kill current process if exists
+    if (control.currentProcess) {
+      try {
+        control.currentProcess.kill('SIGTERM');
+        io?.emit('deploy-log', `🛑 Killing current process...\n`);
+      } catch (killError) {
+        console.error("Error killing process:", killError);
+      }
+    }
+
+    // Update build status
+    await Build.findByIdAndUpdate(buildId, {
+      status: BuildStatus.CANCELLED,
+      $push: { logs: `🛑 Pipeline cancelled by user at ${new Date().toISOString()}` }
+    });
+
+    io?.emit('deploy-log', `🛑 Pipeline ${buildId} cancelled by user\n`);
+
+    // Cleanup will happen in next() function
+
+    res.json({ message: "Pipeline cancelled successfully" });
+  } catch (error: any) {
+    console.error("Error cancelling pipeline:", error);
+    res.status(500).json({ error: "Failed to cancel pipeline", details: error.message });
+  }
+});
+
+// Helper function to cancel a pipeline (can be called from other modules)
+export async function cancelPipelineById(buildId: string): Promise<void> {
+  const control = pipelineControls.get(buildId);
+
+  if (!control) {
+    return; // Pipeline not found or already completed
+  }
+
+  // Mark as cancelled
+  control.cancelled = true;
+
+  // Kill current process if exists
+  if (control.currentProcess) {
+    try {
+      control.currentProcess.kill('SIGTERM');
+      io?.emit('deploy-log', `🛑 Killing current process...\n`);
+    } catch (killError) {
+      console.error("Error killing process:", killError);
+    }
+  }
+
+  // Update build status
+  await Build.findByIdAndUpdate(buildId, {
+    status: BuildStatus.CANCELLED,
+    $push: { logs: `🛑 Pipeline cancelled at ${new Date().toISOString()}` }
+  });
+
+  io?.emit('deploy-log', `🛑 Pipeline ${buildId} cancelled\n`);
+}

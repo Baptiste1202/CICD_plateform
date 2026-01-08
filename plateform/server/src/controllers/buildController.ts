@@ -24,7 +24,7 @@ export const createBuild = async (req: Request, res: Response): Promise<void> =>
       user: userId,
     });
 
-    res.status(201).json({ 
+    res.status(201).json({
       message: "Build créé avec succès",
       build: {
         _id: build._id,
@@ -56,7 +56,7 @@ export const getBuilds = async (req: Request, res: Response): Promise<void> => {
         .limit(size),
       Build.countDocuments()
     ]);
-    
+
     res.json({ builds, count });
   } catch (error: any) {
     console.error("Erreur lors de la récupération des builds:", error);
@@ -69,12 +69,12 @@ export const getBuildById = async (req: Request, res: Response): Promise<void> =
   try {
     const { id } = req.params;
     const build = await Build.findById(id).populate("user", "username avatar");
-    
+
     if (!build) {
       res.status(404).json({ error: "Build introuvable" });
       return;
     }
-    
+
     res.json(build);
   } catch (error: any) {
     console.error("Erreur lors de la récupération du build:", error);
@@ -132,7 +132,7 @@ export const restartBuild = async (req: Request, res: Response): Promise<void> =
       user: userId || originalBuild.user,
     });
 
-    res.json({ 
+    res.json({
       message: "Build redémarré",
       build: newBuild
     });
@@ -153,10 +153,16 @@ export const deleteBuild = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    // Ne pas supprimer un build en cours d'exécution
+    // Si le build est en cours d'exécution, annuler le pipeline d'abord
     if (build.status === BuildStatus.RUNNING) {
-      res.status(400).json({ error: "Impossible de supprimer un build en cours d'exécution" });
-      return;
+      try {
+        // Dynamically import to avoid circular dependency
+        const { cancelPipelineById } = await import("../routes/deployRoutes.js");
+        await cancelPipelineById(id);
+      } catch (error) {
+        console.error("Error cancelling pipeline before deletion:", error);
+        // Continue with deletion even if cancellation fails
+      }
     }
 
     await Build.findByIdAndDelete(id);
