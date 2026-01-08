@@ -3,7 +3,6 @@ import { Build } from "../models/buildModel.js";
 import { BuildStatus } from "../interfaces/IBuild.js";
 import mongoose from "mongoose";
 
-// Créer un nouveau build au début du déploiement
 export const createBuild = async (req: Request, res: Response): Promise<void> => {
   try {
     const { projectName, images, deploymentId } = req.body;
@@ -41,7 +40,6 @@ export const createBuild = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-// Récupérer tous les builds avec pagination
 export const getBuilds = async (req: Request, res: Response): Promise<void> => {
   try {
     const page = parseInt(req.query.page as string) || 0;
@@ -50,7 +48,6 @@ export const getBuilds = async (req: Request, res: Response): Promise<void> => {
     const userId = (req as any).user?.id;
     const userRole = (req as any).user?.role;
 
-    // Filter builds based on user role
     const filter = userRole === "admin" ? {} : { user: userId };
 
     const [builds, count] = await Promise.all([
@@ -69,7 +66,6 @@ export const getBuilds = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// Récupérer un build par ID
 export const getBuildById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -87,7 +83,6 @@ export const getBuildById = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-// Mettre à jour le statut d'un build
 export const updateBuildStatus = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -115,7 +110,6 @@ export const updateBuildStatus = async (req: Request, res: Response): Promise<vo
   }
 };
 
-// Redémarrer un build (créer un nouveau build avec les mêmes paramètres)
 export const restartBuild = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -147,7 +141,6 @@ export const restartBuild = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-// Supprimer un build
 export const deleteBuild = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -158,15 +151,12 @@ export const deleteBuild = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    // Si le build est en cours d'exécution, annuler le pipeline d'abord
     if (build.status === BuildStatus.RUNNING) {
       try {
-        // Dynamically import to avoid circular dependency
         const { cancelPipelineById } = await import("../routes/deployRoutes.js");
         await cancelPipelineById(id);
       } catch (error) {
         console.error("Error cancelling pipeline before deletion:", error);
-        // Continue with deletion even if cancellation fails
       }
     }
 

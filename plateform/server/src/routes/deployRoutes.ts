@@ -15,7 +15,6 @@ const __dirname = dirname(__filename);
 
 export const deployRoutes = express.Router();
 
-// Global map to track pipeline control states for cancellation
 const pipelineControls = new Map<string, {
   paused: boolean;
   cancelled: boolean;
@@ -33,7 +32,6 @@ function runCommand(command: string, args: string[], cwd: string, buildId: strin
 
   const child = spawn(command, args, { cwd, shell: true, env });
 
-  // Store process reference for cancellation
   const control = pipelineControls.get(buildId);
   if (control) {
     control.currentProcess = child;
@@ -43,7 +41,6 @@ function runCommand(command: string, args: string[], cwd: string, buildId: strin
   child.stderr.on('data', (data) => io?.emit('deploy-log', `LOG: ${data.toString()}`));
 
   child.on('close', (code) => {
-    // Check if cancelled
     if (control?.cancelled) {
       callback(new Error('Pipeline cancelled by user'));
       return;
@@ -161,9 +158,7 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
   const sshTarget = `${userVM}@${ipVM}`;
 
 
-  // Créer un objet Build au début du déploiement
   const deploymentId = new mongoose.Types.ObjectId().toString();
-  // Générer un tag de version basé sur la date et l'heure (format: YYYYMMDD-HHMMSS)
   const now = new Date();
   const imageTag = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
   const images = [`cicd-plateform-backend:${imageTag}`, `cicd-plateform-frontend:${imageTag}`];
@@ -184,7 +179,6 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
 
     buildId = build._id.toString();
 
-    // Initialize pipeline control state
     pipelineControls.set(buildId, { paused: false, cancelled: false });
 
     io?.emit('deploy-log', `🚀 Build créé avec ID: ${buildId}\n`);
@@ -217,9 +211,9 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
       cmd: process.platform === "win32" ? "mvn.cmd" : "mvn",
       args: [
         "clean",
-        "org.jacoco:jacoco-maven-plugin:0.8.10:prepare-agent", // 1. Prépare l'écouteur
-        "verify",                                            // 2. Exécute les tests
-        "org.jacoco:jacoco-maven-plugin:0.8.10:report",      // 3. Génère le XML
+        "org.jacoco:jacoco-maven-plugin:0.8.12:prepare-agent",
+        "verify",
+        "org.jacoco:jacoco-maven-plugin:0.8.12:report",
         "org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar",
         `-Dsonar.token=${process.env.SONAR_TOKEN}`,
         "-Dsonar.host.url=http://localhost:9000",
@@ -327,10 +321,8 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
   async function markBuildSuccess() {
     if (buildId) {
       try {
-        // Unmark all previous builds as deployed
         await Build.updateMany({ isDeployed: true }, { isDeployed: false });
 
-        // Mark this build as successful and deployed
         await Build.findByIdAndUpdate(buildId, {
           status: BuildStatus.SUCCESS,
           isDeployed: true,
@@ -344,7 +336,6 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
   }
 
   async function next() {
-    // Check if pipeline has been cancelled
     const control = pipelineControls.get(buildId!);
     if (control?.cancelled) {
       await Build.findByIdAndUpdate(buildId, {
@@ -356,12 +347,10 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
       return res.status(200).json({ message: "Pipeline cancelled" });
     }
 
-    // Check if pipeline has been paused
     if (control?.paused) {
       io?.emit('deploy-log', `⏸️ Pipeline paused\n`);
       await Build.findByIdAndUpdate(buildId, { status: BuildStatus.PAUSED });
 
-      // Wait for resume
       await new Promise<void>((resolve) => {
         const checkInterval = setInterval(() => {
           const currentControl = pipelineControls.get(buildId!);
@@ -372,7 +361,6 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
         }, 500);
       });
 
-      // Check if cancelled while paused
       if (control?.cancelled) {
         return;
       }
@@ -402,7 +390,6 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
           next();
         });
       } else if (task.type === 'createEnvFile') {
-        // Créer le fichier .env avec les variables d'environnement
         const envFilePath = path.join(task.folder, '.env');
         try {
           fs.writeFileSync(envFilePath, task.envContent);
@@ -448,7 +435,7 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
       }
     } else {
       await markBuildSuccess();
-      pipelineControls.delete(buildId!); // Cleanup control state
+      pipelineControls.delete(buildId!);
       io?.emit('deploy-log', `✅ Déploiement terminé avec succès.\n`);
       res.json({
         message: "Déploiement terminé",
@@ -461,7 +448,6 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
   next();
 });
 
-// Route pour redéployer une image existante depuis un build
 deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (req, res) => {
   const { buildId } = req.params;
   const cicdRunDir = path.resolve(__dirname, "../../../../Application_metier/CICD-run");
@@ -473,7 +459,6 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
   const userId = (req as any).user?.id;
 
   try {
-    // Récupérer le build original pour obtenir les images
     const originalBuild = await Build.findById(buildId);
     if (!originalBuild) {
       return res.status(404).json({ error: "Build introuvable" });
@@ -486,7 +471,6 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
     const images = originalBuild.images;
     const newDeploymentId = new mongoose.Types.ObjectId().toString();
 
-    // Créer un nouveau build pour le redéploiement
     const newBuild = await Build.create({
       projectName: originalBuild.projectName,
       status: BuildStatus.RUNNING,
@@ -536,10 +520,8 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
       }
     }
 
-    // Vérifier si les images existent sur la VM pour éviter le transfert inutile
     let needsTransfer = true;
 
-    // Tâche de vérification des images sur la VM
     const checkImagesCommand = `docker image inspect ${images[0]} ${images[1]} > /dev/null 2>&1 && echo "EXISTS" || echo "MISSING"`;
 
     io?.emit('deploy-log', `🔍 Vérification de l'existence des images sur la VM...\n`);
@@ -559,10 +541,8 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
       }
       await updateBuildLog(needsTransfer ? `Images non présentes sur VM, transfert requis` : `Images déjà sur VM, skip transfert`);
 
-      // Construire les tâches en fonction de la présence des images
       const tasks = [];
 
-      // Si les images doivent être transférées
       if (needsTransfer) {
         tasks.push(
           {
@@ -586,7 +566,6 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
         );
       }
 
-      // Tâches communes (toujours exécutées)
       tasks.push(
         {
           folder: cicdRunDir,
@@ -653,7 +632,6 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
               next();
             });
           } else if (task.type === 'createEnvFile') {
-            // Créer le fichier .env avec les variables d'environnement
             const envFilePath = path.join(task.folder, '.env');
             try {
               fs.writeFileSync(envFilePath, task.envContent);
@@ -712,7 +690,6 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
   }
 });
 
-// Pause a running pipeline
 deployRoutes.post("/pause/:buildId", verifyToken({ role: "admin" }), async (req, res) => {
   const { buildId } = req.params;
 
@@ -727,7 +704,6 @@ deployRoutes.post("/pause/:buildId", verifyToken({ role: "admin" }), async (req,
       return res.status(400).json({ error: "Pipeline is already paused" });
     }
 
-    // Mark as paused
     control.paused = true;
     io?.emit('deploy-log', `⏸️ Pause requested by user\n`);
 
@@ -738,7 +714,6 @@ deployRoutes.post("/pause/:buildId", verifyToken({ role: "admin" }), async (req,
   }
 });
 
-// Resume a paused pipeline
 deployRoutes.post("/resume/:buildId", verifyToken({ role: "admin" }), async (req, res) => {
   const { buildId } = req.params;
 
@@ -753,7 +728,6 @@ deployRoutes.post("/resume/:buildId", verifyToken({ role: "admin" }), async (req
       return res.status(400).json({ error: "Pipeline is not paused" });
     }
 
-    // Mark as resumed
     control.paused = false;
     io?.emit('deploy-log', `▶️ Resume requested by user\n`);
 
@@ -764,7 +738,6 @@ deployRoutes.post("/resume/:buildId", verifyToken({ role: "admin" }), async (req
   }
 });
 
-// Cancel a running pipeline
 deployRoutes.post("/cancel/:buildId", verifyToken({ role: "admin" }), async (req, res) => {
   const { buildId } = req.params;
 
@@ -775,10 +748,8 @@ deployRoutes.post("/cancel/:buildId", verifyToken({ role: "admin" }), async (req
       return res.status(404).json({ error: "Pipeline not found or already completed" });
     }
 
-    // Mark as cancelled
     control.cancelled = true;
 
-    // Kill current process if exists
     if (control.currentProcess) {
       try {
         control.currentProcess.kill('SIGTERM');
@@ -788,7 +759,6 @@ deployRoutes.post("/cancel/:buildId", verifyToken({ role: "admin" }), async (req
       }
     }
 
-    // Update build status
     await Build.findByIdAndUpdate(buildId, {
       status: BuildStatus.CANCELLED,
       $push: { logs: `🛑 Pipeline cancelled by user at ${new Date().toISOString()}` }
@@ -796,7 +766,6 @@ deployRoutes.post("/cancel/:buildId", verifyToken({ role: "admin" }), async (req
 
     io?.emit('deploy-log', `🛑 Pipeline ${buildId} cancelled by user\n`);
 
-    // Cleanup will happen in next() function
 
     res.json({ message: "Pipeline cancelled successfully" });
   } catch (error: any) {
@@ -805,18 +774,15 @@ deployRoutes.post("/cancel/:buildId", verifyToken({ role: "admin" }), async (req
   }
 });
 
-// Helper function to cancel a pipeline (can be called from other modules)
 export async function cancelPipelineById(buildId: string): Promise<void> {
   const control = pipelineControls.get(buildId);
 
   if (!control) {
-    return; // Pipeline not found or already completed
+    return;
   }
 
-  // Mark as cancelled
   control.cancelled = true;
 
-  // Kill current process if exists
   if (control.currentProcess) {
     try {
       control.currentProcess.kill('SIGTERM');
@@ -826,7 +792,6 @@ export async function cancelPipelineById(buildId: string): Promise<void> {
     }
   }
 
-  // Update build status
   await Build.findByIdAndUpdate(buildId, {
     status: BuildStatus.CANCELLED,
     $push: { logs: `🛑 Pipeline cancelled at ${new Date().toISOString()}` }

@@ -13,9 +13,9 @@ const buildSchema = new Schema<IBuild>(
       default: BuildStatus.PENDING,
     },
     image: { type: String, required: true },
-    images: [{ type: String }], // Liste des images déployées
-    deploymentId: { type: String }, // ID unique du déploiement
-    isDeployed: { type: Boolean, default: false }, // Indique si ce build est déployé
+    images: [{ type: String }],
+    deploymentId: { type: String },
+    isDeployed: { type: Boolean, default: false },
     logs: [{ type: String }],
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },

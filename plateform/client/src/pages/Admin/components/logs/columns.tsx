@@ -106,7 +106,6 @@ export const getColumns = (deleteLog: (id: string) => void, t: TFunction<"transl
       const type = item.type;
 
       if (type === 'build') {
-        // Only admins can modify pipelines
         if (role === 'admin') {
           return (
             <Button asChild variant="outline" size="sm" className="h-8 border-border hover:bg-black hover:text-white transition-all">
@@ -117,7 +116,6 @@ export const getColumns = (deleteLog: (id: string) => void, t: TFunction<"transl
             </Button>
           );
         }
-        // Regular users see view-only button
         return (
           <Button asChild variant="outline" size="sm" className="h-8 border-border hover:bg-black hover:text-white transition-all">
             <Link to={`/pipeline/${item._id}`}>
@@ -128,7 +126,6 @@ export const getColumns = (deleteLog: (id: string) => void, t: TFunction<"transl
         );
       }
 
-      // System logs actions
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

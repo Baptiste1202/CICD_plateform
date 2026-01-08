@@ -86,7 +86,6 @@ export function DataTable<TData, TValue>({
 
   return (
       <div className="overflow-hidden border rounded-md">
-        {/* HEADER SECTION */}
         <div className="flex flex-col p-4 gap-4 md:flex-row md:items-center md:justify-between">
           <div className="w-full md:flex md:flex-row md:items-center md:justify-start md:gap-4">
             <Input

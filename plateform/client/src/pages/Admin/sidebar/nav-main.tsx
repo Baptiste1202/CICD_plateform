@@ -2,7 +2,7 @@ import { type LucideIcon } from "lucide-react";
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useConfigContext } from "@/contexts/configContext";
-import { useAuthContext } from "@/contexts/authContext"; // <--- CETTE LIGNE EST OBLIGATOIRE
+import { useAuthContext } from "@/contexts/authContext";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 

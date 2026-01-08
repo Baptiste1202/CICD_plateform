@@ -39,7 +39,6 @@ export const PipelineView = () => {
         const handleLog = (data: string) => {
             setLogs((prev) => [...prev, data]);
 
-            // Extract buildId from log message
             if (data.includes("Build créé avec ID:")) {
                 const match = data.match(/Build créé avec ID:\s*(\S+)/);
                 if (match) {
