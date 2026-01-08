@@ -9,13 +9,15 @@ export const Builds = () => {
   const [builds, setBuilds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [buildCount, setBuildCount] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { t } = useTranslation();
 
-  async function fetchAllBuilds(page: number = 0, size: number = 10) {
+  async function fetchAllBuilds(page: number = 0, size: number = 5, search: string = "") {
     setLoading(true);
     try {
-      const response = await axiosConfig.get("/builds?page=" + page + "&size=" + size);
+      const response = await axiosConfig.get(`/builds?page=${page}&size=${size}&search=${search}`);
+
       setBuilds(response.data.builds);
       setBuildCount(response.data.count);
     } catch (error: any) {
@@ -28,10 +30,9 @@ export const Builds = () => {
   async function handleRedeploy(build: any) {
     try {
       toast.loading(t("pages.admin.build_page.redeploying") || "Redéploiement en cours...");
-      // Appeler la route de redéploiement au lieu de restart
       await axiosConfig.post(`/deploy/redeploy/${build._id}`);
       toast.success(t("pages.admin.build_page.redeploy_success") || "Redéploiement lancé avec succès");
-      fetchAllBuilds();
+      fetchAllBuilds(0, 5, searchTerm);
     } catch (error: any) {
       toast.error(t(error.response?.data?.error || "Error redeploying build"));
     }
@@ -44,7 +45,7 @@ export const Builds = () => {
     try {
       await axiosConfig.delete(`/builds/${build._id}`);
       toast.success(t("pages.admin.build_page.delete_success") || "Build supprimé avec succès");
-      fetchAllBuilds();
+      fetchAllBuilds(0, 5, searchTerm);
     } catch (error: any) {
       toast.error(t(error.response?.data?.error || "Error deleting build"));
     }
@@ -59,29 +60,29 @@ export const Builds = () => {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-8 bg-background">
-      <div className="flex items-center justify-between border-b-2 border-border pb-6">
-        <div>
-          <h1 className="text-3xl font-black uppercase tracking-tight">
-            {t("pages.admin.builds")}
-          </h1>
-          <p className="text-muted-foreground text-sm font-medium">
-            {t("pages.admin.build_page.subtitle") || "Manage your project deployments"}
-          </p>
+      <div className="flex flex-1 flex-col gap-8 p-8 bg-background">
+        <div className="flex items-center justify-between border-b-2 border-border pb-6">
+          <div>
+            <h1 className="text-3xl font-black uppercase tracking-tight">
+              {t("pages.admin.builds")}
+            </h1>
+            <p className="text-muted-foreground text-sm font-medium">
+              {t("pages.admin.build_page.subtitle") || "Manage your project deployments"}
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-xl border-2 border-border bg-card overflow-hidden">
+          <DataTable
+              columns={getColumns(t, callback)}
+              data={builds}
+              isLoading={loading}
+              dataCount={buildCount}
+              fetchData={fetchAllBuilds}
+              searchElement="globalSearch"
+              callback={callback}
+          />
         </div>
       </div>
-
-      <div className="rounded-xl border-2 border-border bg-card overflow-hidden">
-        <DataTable
-          columns={getColumns(t, callback)}
-          data={builds}
-          isLoading={loading}
-          dataCount={buildCount}
-          fetchData={fetchAllBuilds}
-          searchElement="projectName"
-          callback={callback}
-        />
-      </div>
-    </div>
   );
 };

@@ -148,6 +148,7 @@
         "status_running": "En cours",
         "status_success": "Succès",
         "status_failed": "Échec",
+        "status_paused": "En attente",
         "form": {
           "submit": "Créer le build"
         }
