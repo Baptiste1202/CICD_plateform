@@ -25,9 +25,37 @@ export const Builds = () => {
     }
   }
 
+  async function handleRedeploy(build: any) {
+    try {
+      toast.loading(t("pages.admin.build_page.redeploying") || "Redéploiement en cours...");
+      // Appeler la route de redéploiement au lieu de restart
+      await axiosConfig.post(`/deploy/redeploy/${build._id}`);
+      toast.success(t("pages.admin.build_page.redeploy_success") || "Redéploiement lancé avec succès");
+      fetchAllBuilds();
+    } catch (error: any) {
+      toast.error(t(error.response?.data?.error || "Error redeploying build"));
+    }
+  }
+
+  async function handleDelete(build: any) {
+    if (!confirm(t("pages.admin.build_page.confirm_delete") || "Voulez-vous vraiment supprimer ce build ?")) {
+      return;
+    }
+    try {
+      await axiosConfig.delete(`/builds/${build._id}`);
+      toast.success(t("pages.admin.build_page.delete_success") || "Build supprimé avec succès");
+      fetchAllBuilds();
+    } catch (error: any) {
+      toast.error(t(error.response?.data?.error || "Error deleting build"));
+    }
+  }
+
   function callback(action: string, data: any) {
-    // No actions implemented for now
-    console.log(action, data);
+    if (action === "redeploy") {
+      handleRedeploy(data);
+    } else if (action === "delete") {
+      handleDelete(data);
+    }
   }
 
   return (
@@ -45,7 +73,7 @@ export const Builds = () => {
 
       <div className="rounded-xl border-2 border-border bg-card overflow-hidden">
         <DataTable
-          columns={getColumns(t)}
+          columns={getColumns(t, callback)}
           data={builds}
           isLoading={loading}
           dataCount={buildCount}

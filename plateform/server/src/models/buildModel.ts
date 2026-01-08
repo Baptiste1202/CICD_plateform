@@ -13,6 +13,8 @@ const buildSchema = new Schema<IBuild>(
       default: BuildStatus.PENDING,
     },
     image: { type: String, required: true },
+    images: [{ type: String }], // Liste des images déployées
+    deploymentId: { type: String }, // ID unique du déploiement
     logs: [{ type: String }],
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },

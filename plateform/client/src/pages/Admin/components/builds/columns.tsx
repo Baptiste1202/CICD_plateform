@@ -1,13 +1,13 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, RotateCw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TFunction } from "i18next";
 import { BuildInterface } from "@/interfaces/Build";
 import { cn } from "@/lib/utils";
 
-export const getColumns = (t: TFunction<"translation">): ColumnDef<BuildInterface>[] => [
+export const getColumns = (t: TFunction<"translation">, callback: (action: string, data: any) => void): ColumnDef<BuildInterface>[] => [
   {
     accessorKey: "projectName",
     header: ({ column }) => (
@@ -62,6 +62,37 @@ export const getColumns = (t: TFunction<"translation">): ColumnDef<BuildInterfac
     cell: ({ row }) => {
       const date = new Date(row.getValue("createdAt"));
       return <span className="text-muted-foreground">{format(date, "dd/MM/yyyy HH:mm")}</span>;
+    },
+  },
+  {
+    id: "actions",
+    header: () => <div className="text-right font-bold">{t("pages.admin.build_page.actions") || "Actions"}</div>,
+    cell: ({ row }) => {
+      const build = row.original;
+      return (
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => callback("redeploy", build)}
+            disabled={build.status === "running"}
+            className="gap-1"
+          >
+            <RotateCw className="w-3 h-3" />
+            {t("pages.admin.build_page.redeploy") || "Redéployer"}
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => callback("delete", build)}
+            disabled={build.status === "running"}
+            className="gap-1"
+          >
+            <Trash2 className="w-3 h-3" />
+            {t("pages.admin.build_page.delete") || "Supprimer"}
+          </Button>
+        </div>
+      );
     },
   },
 ];

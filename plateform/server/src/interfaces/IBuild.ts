@@ -12,6 +12,8 @@ export interface IBuild extends Document {
   projectName: string;
   status: BuildStatus;
   image: string;
+  images?: string[]; // Liste des images déployées (backend, frontend, etc.)
+  deploymentId?: string; // ID unique du déploiement
   logs: string[];
   createdAt: Date;
   updatedAt: Date;
