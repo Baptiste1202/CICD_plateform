@@ -143,6 +143,9 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), (req, res) => {
   const cicdRunDir = path.join(appMetierRoot, "CICD-run");
   const sshPassword = (req.body?.sshPassword as string) || process.env.DEPLOY_SSH_PASSWORD || undefined;
   const sudoPassword = (req.body?.sudoPassword as string) || process.env.DEPLOY_SUDO_PASSWORD || undefined;
+  const userVM = process.env.USER_VM || undefined;;
+  const ipVM = process.env.IP_VM || undefined;;
+  const sshTarget = `${userVM}@${ipVM}`;
 
   console.log("--- DEBUG DEPLOIEMENT ---");
   console.log("Chemin absolu calculé :", appMetierRoot);
@@ -181,7 +184,7 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), (req, res) => {
       folder: cicdRunDir,
       type: 'dockerTransfer',
       image: 'cicd-run-backend:latest',
-      sshTarget: 'baptiste@192.168.213.130',
+      sshTarget: sshTarget,
       useSudo: false,
       sshPassword,
       sudoPassword
@@ -190,7 +193,7 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), (req, res) => {
       folder: cicdRunDir,
       type: 'dockerTransfer',
       image: 'cicd-run-frontend:latest',
-      sshTarget: 'baptiste@192.168.213.130',
+      sshTarget: sshTarget,
       useSudo: false,
       sshPassword,
       sudoPassword
@@ -198,14 +201,14 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), (req, res) => {
     {
       folder: cicdRunDir,
       type: 'remoteCommand',
-      sshTarget: 'baptiste@192.168.213.130',
+      sshTarget: sshTarget,
       command: 'mkdir -p ~/workspace/CICD_project/CICD-run',
       sshPassword
     },
     {
       folder: cicdRunDir,
       type: 'copyFile',
-      sshTarget: 'baptiste@192.168.213.130',
+      sshTarget: sshTarget,
       localFile: path.join(cicdRunDir, 'docker-compose.prod.yaml'),
       remotePath: '~/workspace/CICD_project/CICD-run/docker-compose.prod.yaml',
       sshPassword
@@ -213,7 +216,7 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), (req, res) => {
     {
       folder: cicdRunDir,
       type: 'remoteCommand',
-      sshTarget: 'baptiste@192.168.213.130',
+      sshTarget: sshTarget,
       command: 'cd ~/workspace/CICD_project/CICD-run && docker compose -f docker-compose.prod.yaml up -d',
       sshPassword
     },
