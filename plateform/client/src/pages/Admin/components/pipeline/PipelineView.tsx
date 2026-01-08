@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 const steps = [
     { id: 'git', label: 'GIT PULL & SUBMODULES' },
     { id: 'tests', label: 'UNIT TESTS (MAVEN)' },
+    { id: 'sonarQUBE', label: 'SONARQUBE ANALYSIS' },
     { id: 'maven', label: 'BUILD SERVICES' },
     { id: 'docker', label: 'DEPLOYEMENT ON SERVER' },
     { id: 'ssh', label: 'FINALISATION' }
@@ -38,9 +39,10 @@ export const PipelineView = () => {
 
             if (data.includes("git pull")) setCurrentStepIndex(0);
             if (data.includes("mvn test") || data.includes("Tests run:")) setCurrentStepIndex(1);
-            if (data.includes("docker-compose") && data.includes("build")) setCurrentStepIndex(3);
-            if (data.includes("docker save")) setCurrentStepIndex(3);
-            if (data.includes("docker compose") && data.includes("up")) setCurrentStepIndex(4);
+            if (data.includes("sonarQ") || data.includes("SonarQube") || data.includes("ANALYSIS SUCCESSFUL")) setCurrentStepIndex(2);
+            if (data.includes("docker-compose") && data.includes("build")) setCurrentStepIndex(4);
+            if (data.includes("docker save")) setCurrentStepIndex(4);
+            if (data.includes("docker compose") && data.includes("up")) setCurrentStepIndex(5);
             if (data.includes("succès")) {
                 setCurrentStepIndex(steps.length);
                 setStatus("success");
@@ -123,8 +125,8 @@ export const PipelineView = () => {
                                     {isDone ? <CheckCircle className="w-4 h-4" /> : idx + 1}
                                 </div>
                                 <span className={cn("text-[11px] font-black uppercase tracking-widest", isCurrent || isDone ? "text-foreground" : "text-muted-foreground/40")}>
-                        {step.label}
-                    </span>
+                                    {step.label}
+                                </span>
                             </div>
                         );
                     })}
