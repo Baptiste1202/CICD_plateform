@@ -193,10 +193,11 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
       cmd: process.platform === "win32" ? "mvn.cmd" : "mvn",
       args: [
         "verify",
-        "sonar:sonar",
+        "org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar",
         `-Dsonar.token=${process.env.SONAR_TOKEN}`,
         "-Dsonar.host.url=http://localhost:9000",
-        "-Dsonar.projectKey=tuto-backend"
+        "-Dsonar.projectKey=cicd-sonar",
+        "-Dsonar.projectName=cicd-project"
       ]
     },
     {
