@@ -192,12 +192,16 @@ deployRoutes.post("/", verifyToken({ role: "admin" }), async (req, res) => {
       folder: cicdBackDir,
       cmd: process.platform === "win32" ? "mvn.cmd" : "mvn",
       args: [
-        "verify",
+        "clean",
+        "org.jacoco:jacoco-maven-plugin:0.8.10:prepare-agent", // 1. Prépare l'écouteur
+        "verify",                                            // 2. Exécute les tests
+        "org.jacoco:jacoco-maven-plugin:0.8.10:report",      // 3. Génère le XML
         "org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar",
         `-Dsonar.token=${process.env.SONAR_TOKEN}`,
         "-Dsonar.host.url=http://localhost:9000",
         "-Dsonar.projectKey=cicd-sonar",
-        "-Dsonar.projectName=cicd-project"
+        "-Dsonar.projectName=cicd-project",
+        "-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml"
       ]
     },
     {
