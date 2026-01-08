@@ -64,7 +64,7 @@ function transferDockerImageViaSSH(params: { image: string; sshTarget: string; u
   let finished = false;
   const TRANSFER_TIMEOUT_MS = 30 * 60 * 1000;
   const timeout = setTimeout(() => {
-    io?.emit('deploy-log', `❌ Transfert expiré après ${Math.round(TRANSFER_TIMEOUT_MS/60000)} min.\n`);
+    io?.emit('deploy-log', `❌ Transfert expiré après ${Math.round(TRANSFER_TIMEOUT_MS / 60000)} min.\n`);
     finalize(new Error('Transfert de l\'image expiré'));
   }, TRANSFER_TIMEOUT_MS);
 
@@ -72,8 +72,8 @@ function transferDockerImageViaSSH(params: { image: string; sshTarget: string; u
     if (finished) return;
     finished = true;
     clearTimeout(timeout);
-    try { saveProc.kill(); } catch {}
-    try { sshProc.kill(); } catch {}
+    try { saveProc.kill(); } catch { }
+    try { sshProc.kill(); } catch { }
     callback(err);
   };
 
@@ -560,76 +560,76 @@ deployRoutes.post("/redeploy/:buildId", verifyToken({ role: "admin" }), async (r
         if (taskIndex < tasks.length) {
           const task = tasks[taskIndex++];
 
-        if (!fs.existsSync(task.folder)) {
-          const msg = `⚠️ ERREUR : Le dossier est introuvable : ${task.folder}\n`;
-          console.error(msg);
-          io?.emit('deploy-log', msg);
-          markBuildFailed(`Dossier introuvable: ${task.folder}`).then(() => {
-            res.status(500).json({ error: "Dossier cible introuvable", path: task.folder });
-          });
-          return;
-        }
-
-        if (task.type === 'dockerTransfer') {
-          transferDockerImageViaSSH({ image: task.image, sshTarget: task.sshTarget, useSudo: task.useSudo, cwd: task.folder, sshPassword: task.sshPassword, sudoPassword: task.sudoPassword }, async (error) => {
-            if (error) {
-              console.error(error);
-              io?.emit('deploy-log', `❌ Erreur critique: ${error.message}\n`);
-              await markBuildFailed(error.message);
-              return res.status(500).json({ error: "Échec du redéploiement", details: error.message });
-            }
-            await updateBuildLog(`✅ Image ${task.image} transférée avec succès`);
-            next();
-          });
-        } else if (task.type === 'createEnvFile') {
-          // Créer le fichier .env avec les variables d'environnement
-          const envFilePath = path.join(task.folder, '.env');
-          try {
-            fs.writeFileSync(envFilePath, task.envContent);
-            io?.emit('deploy-log', `✅ Fichier .env créé avec les images versionnées\n`);
-            await updateBuildLog(`✅ Fichier .env créé`);
-            next();
-          } catch (error: any) {
-            console.error(error);
-            io?.emit('deploy-log', `❌ Erreur lors de la création du fichier .env: ${error.message}\n`);
-            await markBuildFailed(error.message);
-            return res.status(500).json({ error: "Échec de la création du fichier .env", details: error.message });
+          if (!fs.existsSync(task.folder)) {
+            const msg = `⚠️ ERREUR : Le dossier est introuvable : ${task.folder}\n`;
+            console.error(msg);
+            io?.emit('deploy-log', msg);
+            markBuildFailed(`Dossier introuvable: ${task.folder}`).then(() => {
+              res.status(500).json({ error: "Dossier cible introuvable", path: task.folder });
+            });
+            return;
           }
-        } else if (task.type === 'remoteCommand') {
-          executeRemoteCommand({ sshTarget: task.sshTarget, command: task.command, cwd: task.folder, sshPassword: task.sshPassword }, async (error) => {
-            if (error) {
+
+          if (task.type === 'dockerTransfer') {
+            transferDockerImageViaSSH({ image: task.image, sshTarget: task.sshTarget, useSudo: task.useSudo, cwd: task.folder, sshPassword: task.sshPassword, sudoPassword: task.sudoPassword }, async (error) => {
+              if (error) {
+                console.error(error);
+                io?.emit('deploy-log', `❌ Erreur critique: ${error.message}\n`);
+                await markBuildFailed(error.message);
+                return res.status(500).json({ error: "Échec du redéploiement", details: error.message });
+              }
+              await updateBuildLog(`✅ Image ${task.image} transférée avec succès`);
+              next();
+            });
+          } else if (task.type === 'createEnvFile') {
+            // Créer le fichier .env avec les variables d'environnement
+            const envFilePath = path.join(task.folder, '.env');
+            try {
+              fs.writeFileSync(envFilePath, task.envContent);
+              io?.emit('deploy-log', `✅ Fichier .env créé avec les images versionnées\n`);
+              await updateBuildLog(`✅ Fichier .env créé`);
+              next();
+            } catch (error: any) {
               console.error(error);
-              io?.emit('deploy-log', `❌ Erreur critique: ${error.message}\n`);
+              io?.emit('deploy-log', `❌ Erreur lors de la création du fichier .env: ${error.message}\n`);
               await markBuildFailed(error.message);
-              return res.status(500).json({ error: "Échec du redéploiement", details: error.message });
+              return res.status(500).json({ error: "Échec de la création du fichier .env", details: error.message });
             }
-            await updateBuildLog(`✅ Commande distante exécutée: ${task.command}`);
-            next();
-          });
-        } else if (task.type === 'copyFile') {
-          copyFileToRemote({ sshTarget: task.sshTarget, localFile: task.localFile, remotePath: task.remotePath, cwd: task.folder, sshPassword: task.sshPassword }, async (error) => {
-            if (error) {
-              console.error(error);
-              io?.emit('deploy-log', `❌ Erreur critique: ${error.message}\n`);
-              await markBuildFailed(error.message);
-              return res.status(500).json({ error: "Échec du redéploiement", details: error.message });
-            }
-            await updateBuildLog(`✅ Fichier copié: ${path.basename(task.localFile)}`);
-            next();
+          } else if (task.type === 'remoteCommand') {
+            executeRemoteCommand({ sshTarget: task.sshTarget, command: task.command, cwd: task.folder, sshPassword: task.sshPassword }, async (error) => {
+              if (error) {
+                console.error(error);
+                io?.emit('deploy-log', `❌ Erreur critique: ${error.message}\n`);
+                await markBuildFailed(error.message);
+                return res.status(500).json({ error: "Échec du redéploiement", details: error.message });
+              }
+              await updateBuildLog(`✅ Commande distante exécutée: ${task.command}`);
+              next();
+            });
+          } else if (task.type === 'copyFile') {
+            copyFileToRemote({ sshTarget: task.sshTarget, localFile: task.localFile, remotePath: task.remotePath, cwd: task.folder, sshPassword: task.sshPassword }, async (error) => {
+              if (error) {
+                console.error(error);
+                io?.emit('deploy-log', `❌ Erreur critique: ${error.message}\n`);
+                await markBuildFailed(error.message);
+                return res.status(500).json({ error: "Échec du redéploiement", details: error.message });
+              }
+              await updateBuildLog(`✅ Fichier copié: ${path.basename(task.localFile)}`);
+              next();
+            });
+          }
+        } else {
+          markBuildSuccess().then(() => {
+            io?.emit('deploy-log', `✅ Redéploiement terminé avec succès.\n`);
+            res.json({
+              message: "Redéploiement terminé",
+              buildId: newBuildId,
+              deploymentId: newDeploymentId,
+              images: images
+            });
           });
         }
-      } else {
-        markBuildSuccess().then(() => {
-          io?.emit('deploy-log', `✅ Redéploiement terminé avec succès.\n`);
-          res.json({
-            message: "Redéploiement terminé",
-            buildId: newBuildId,
-            deploymentId: newDeploymentId,
-            images: images
-          });
-        });
       }
-    }
 
       next();
     });
