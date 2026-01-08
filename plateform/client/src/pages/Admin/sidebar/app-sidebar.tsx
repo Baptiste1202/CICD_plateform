@@ -18,40 +18,40 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {
             title: t("pages.admin.dashboard").toUpperCase(),
             icon: Presentation,
-            url: "/admin/dashboard"
+            url: "/dashboard"
         },
         {
             title: t("pages.admin.users").toUpperCase(),
             icon: UsersIcon,
-            url: "/admin/users"
+            url: "/users"
         },
         {
             title: t("pages.admin.logs").toUpperCase(),
             icon: NotebookText,
-            url: "/admin/logs"
+            url: "/logs"
         },
         {
             title: t("pages.admin.builds").toUpperCase(),
             icon: Cog,
-            url: "/admin/builds"
+            url: "/builds"
         },
         {
             title: t("pages.admin.settings").toUpperCase(),
             icon: Settings,
-            url: "/admin/settings"
+            url: "/settings"
         },
     ];
 
     const userMenus = [
         {
-            title: t("navbar.home").toUpperCase(),
+            title: t("pages.admin.dashboard").toUpperCase(),
             icon: LayoutDashboard,
-            url: "/"
+            url: "/dashboard"
         },
         {
-            title: t("pages.admin.builds").toUpperCase(),
-            icon: Box,
-            url: "/pipelines"
+            title: t("pages.admin.logs").toUpperCase(),
+            icon: NotebookText,
+            url: "/logs"
         },
         {
             title: t("navbar.account").toUpperCase(),

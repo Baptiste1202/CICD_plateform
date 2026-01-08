@@ -21,10 +21,7 @@ export const Router = () => {
 
             <Route element={<LayoutWrapper withLayout={true} />}>
 
-                <Route path="/" element={<ProtectedRoute authRequired={true}><Home /></ProtectedRoute>} />
-                <Route path="/account" element={<ProtectedRoute authRequired={true}><Account /></ProtectedRoute>} />
-
-                <Route path="/admin" element={<ProtectedRoute authRequired={true} role="admin"><AdminIndex /></ProtectedRoute>}>
+                <Route path="/" element={<ProtectedRoute authRequired={true}><AdminIndex /></ProtectedRoute>}>
                     <Route index element={<Navigate to="dashboard" replace />} />
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="users" element={<Users />} />
@@ -32,6 +29,7 @@ export const Router = () => {
                     <Route path="pipeline/:id" element={<PipelineViewPage />} />
                     <Route path="builds" element={<Builds />} />
                     <Route path="settings" element={<Config />} />
+                    <Route path="account" element={<Account />} />
                 </Route>
             </Route>
 

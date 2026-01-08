@@ -8,8 +8,7 @@ export const Home = () => {
 
     useEffect(() => {
         if (authUser) {
-            const target = authUser.role === "admin" ? "/admin/dashboard" : "/pipelines";
-            navigate(target);
+            navigate("/dashboard");
         }
     }, [authUser, navigate]);
 

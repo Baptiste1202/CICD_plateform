@@ -47,14 +47,19 @@ export const getBuilds = async (req: Request, res: Response): Promise<void> => {
     const page = parseInt(req.query.page as string) || 0;
     const size = parseInt(req.query.size as string) || 10;
     const skip = page * size;
+    const userId = (req as any).user?.id;
+    const userRole = (req as any).user?.role;
+
+    // Filter builds based on user role
+    const filter = userRole === "admin" ? {} : { user: userId };
 
     const [builds, count] = await Promise.all([
-      Build.find()
-        .populate("user", "username avatar")
+      Build.find(filter)
+        .populate("user", "username avatar forename name")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(size),
-      Build.countDocuments()
+      Build.countDocuments(filter)
     ]);
 
     res.json({ builds, count });
