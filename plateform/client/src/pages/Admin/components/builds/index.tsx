@@ -31,41 +31,63 @@ export const Builds = () => {
     }
   }
 
-  async function handleRedeploy(build: any) {
-    try {
-      toast.loading(t("pages.admin.build_page.redeploying") || "Redéploiement...");
-      await axiosConfig.post(`/deploy/redeploy/${build._id}`);
-      toast.dismiss();
-      toast.success(t("pages.admin.build_page.redeploy_success"));
-      fetchAllBuilds(pagination.pageIndex, pagination.pageSize, searchTerm);
-    } catch (error: any) {
-      toast.dismiss();
-      toast.error(t(error.response?.data?.error || "Error"));
-    }
-  }
+  const handleRedeploy = (build: any) => {
+    toast(t("pages.admin.build_page.confirm_redeploy") || "Relancer ce déploiement ?", {
+      description: `${build.projectName} - ${build.image}`,
+      action: {
+        label: t("common.confirm") || "Confirmer",
+        onClick: async () => {
+          const toastId = toast.loading(t("pages.admin.build_page.redeploying") || "Redéploiement...");
+          try {
+            await axiosConfig.post(`/deploy/redeploy/${build._id}`);
+            toast.success(t("pages.admin.build_page.redeploy_success"), { id: toastId });
+            fetchAllBuilds(pagination.pageIndex, pagination.pageSize, searchTerm);
+          } catch (error: any) {
+            toast.error(t(error.response?.data?.error || "Error"), { id: toastId });
+          }
+        },
+      },
+    });
+  };
 
-  async function handleDelete(build: any) {
-    if (!confirm(t("pages.admin.build_page.confirm_delete"))) return;
-    try {
-      await axiosConfig.delete(`/builds/${build._id}`);
-      toast.success(t("pages.admin.build_page.delete_success"));
-
-      const isLastItemOnPage = builds.length === 1 && pagination.pageIndex > 0;
-      const newPage = isLastItemOnPage ? pagination.pageIndex - 1 : pagination.pageIndex;
-
-      const updatedPagination = { ...pagination, pageIndex: newPage };
-      setPagination(updatedPagination);
-
-      fetchAllBuilds(updatedPagination.pageIndex, updatedPagination.pageSize, searchTerm);
-
-    } catch (error: any) {
-      toast.error(t(error.response?.data?.error || "Error"));
-    }
-  }
+  const handleDelete = (build: any) => {
+    toast(t("pages.admin.build_page.confirm_delete"), {
+      description: t("pages.admin.build_page.delete_warning"),
+      actionButtonStyle: {
+        backgroundColor: '#ef4444',
+        color: 'white'
+      },
+      action: {
+        label: t("common.delete"),
+        onClick: async () => {
+          const toastId = toast.loading(t("common.deleting"));
+          try {
+            await axiosConfig.delete(`/builds/${build._id}`);
+            toast.success(t("pages.admin.build_page.delete_success"), { id: toastId });
+            fetchAllBuilds();
+          } catch (error: any) {
+            toast.error("Erreur", { id: toastId });
+          }
+        },
+      },
+      cancel: {
+        label: t("common.cancel") || "Annuler",
+        onClick: () => console.log("Suppression annulée")
+      },
+    });
+  };
 
   function callback(action: string, data: any) {
-    if (action === "redeploy") handleRedeploy(data);
-    else if (action === "delete") handleDelete(data);
+    switch (action) {
+      case "redeploy":
+        handleRedeploy(data);
+        break;
+      case "delete":
+        handleDelete(data);
+        break;
+      default:
+        console.warn("Unknown action:", action);
+    }
   }
 
   return (
@@ -78,12 +100,13 @@ export const Builds = () => {
               </h1>
               <Hammer className="w-6 h-6 text-primary" />
             </div>
-            <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] mt-1">
-              {t("pages.admin.build_page.subtitle")}
+            <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] mt-1 italic">
+              {t("pages.admin.build_page.subtitle") || "Gestion et monitoring des builds serveurs"}
             </p>
           </div>
         </div>
-        <div className="rounded-xl border-2 border-border bg-card overflow-hidden transition-all">
+
+        <div className="rounded-xl border-2 border-border bg-card overflow-hidden shadow-sm transition-all">
           <DataTable
               columns={getColumns(t, callback)}
               data={builds}
@@ -92,7 +115,9 @@ export const Builds = () => {
               fetchData={fetchAllBuilds}
               pageIndex={pagination.pageIndex}
               pageSize={pagination.pageSize}
-              onPaginationChange={setPagination}
+              onPaginationChange={(newPagination) => {
+                setPagination(newPagination);
+              }}
               searchElement="globalSearch"
               callback={callback}
           />

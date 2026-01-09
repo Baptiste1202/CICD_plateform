@@ -24,6 +24,7 @@ export const PipelineView = () => {
     const [logs, setLogs] = useState<string[]>(["En attente de lancement..."]);
     const [buildId, setBuildId] = useState<string | null>(null);
     const [isPaused, setIsPaused] = useState(false);
+    const [activeToastId, setActiveToastId] = useState<string | number | null>(null);
 
     const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -49,7 +50,7 @@ export const PipelineView = () => {
             if (data.includes("git pull")) setCurrentStepIndex(0);
             if (data.includes("mvn test") || data.includes("Tests run:")) setCurrentStepIndex(1);
             if (data.includes("sonarQ") || data.includes("SonarQube") || data.includes("ANALYSIS SUCCESSFUL")) setCurrentStepIndex(2);
-            if (data.includes("docker-compose") && data.includes("build")) setCurrentStepIndex(4);
+            if (data.includes("docker-compose") && data.includes("build")) setCurrentStepIndex(3);
             if (data.includes("docker save")) setCurrentStepIndex(4);
             if (data.includes("docker compose") && data.includes("up")) setCurrentStepIndex(5);
             if (data.includes("succès")) {
@@ -59,6 +60,7 @@ export const PipelineView = () => {
             if (data.includes("cancelled")) {
                 setStatus("cancelled");
                 setLoading(false);
+                if (activeToastId) toast.dismiss(activeToastId);
             }
             if (data.includes("paused")) {
                 setIsPaused(true);
@@ -69,11 +71,15 @@ export const PipelineView = () => {
         };
 
         socket.on('deploy-log', handleLog);
+        return () => { socket.off('deploy-log', handleLog); };
+    }, [socket, activeToastId]);
 
-        return () => {
-            socket.off('deploy-log', handleLog);
-        };
-    }, [socket]);
+    const confirmAction = (message: string, onConfirm: () => void) => {
+        toast(message, {
+            action: { label: "Confirmer", onClick: onConfirm },
+            cancel: { label: "Annuler", onClick: () => {} },
+        });
+    };
 
     async function startDeploy() {
         if (loading) return;
@@ -83,7 +89,8 @@ export const PipelineView = () => {
         setCurrentStepIndex(0);
         setLogs([`[${new Date().toLocaleTimeString()}] > INITIALIZING DEPLOYMENT...\n`]);
 
-        const toastId = toast.loading("Déploiement en cours sur le serveur...");
+        const id = toast.loading("Déploiement en cours sur le serveur...");
+        setActiveToastId(id);
 
         try {
             const response = await axios.post(
@@ -98,96 +105,60 @@ export const PipelineView = () => {
                 }
             );
             setBuildId(response.data.buildId);
-            toast.success("Déploiement terminé avec succès", { id: toastId });
-            setStatus("success");
-            setCurrentStepIndex(steps.length);
+            toast.success("Déploiement terminé avec succès", { id });
+            setActiveToastId(null);
         } catch (error: any) {
             const message = error.response?.data?.error || "Erreur de déploiement";
-            toast.error(message, { id: toastId });
+            toast.error(message, { id });
             setLogs((prev) => [...prev, `\n❌ ERREUR API : ${message}`]);
             setStatus("idle");
-        } finally {
             setLoading(false);
+            setActiveToastId(null);
         }
     }
 
     async function cancelDeploy() {
-        if (!buildId) {
-            toast.error("No active deployment to cancel");
-            return;
-        }
+        if (!buildId) return;
 
-        if (!confirm("Are you sure you want to cancel this deployment?")) {
-            return;
-        }
-
-        try {
-            await axios.post(
-                `${import.meta.env.VITE_API_URL}/api/deploy/cancel/${buildId}`,
-                {},
-                {
+        confirmAction("Annuler le déploiement en cours ?", async () => {
+            try {
+                if (activeToastId) toast.dismiss(activeToastId);
+                await axios.post(`${import.meta.env.VITE_API_URL}/api/deploy/cancel/${buildId}`, {}, {
                     withCredentials: true,
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-                    },
-                }
-            );
-            toast.success("Pipeline cancelled");
-            setStatus("cancelled");
-            setLoading(false);
-        } catch (error: any) {
-            const message = error.response?.data?.error || "Failed to cancel pipeline";
-            toast.error(message);
-        }
+                    headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
+                });
+                toast.error("Pipeline stoppé");
+                setStatus("cancelled");
+                setLoading(false);
+            } catch (error: any) {
+                toast.error("Erreur lors de l'annulation");
+            }
+        });
     }
 
     async function pauseDeploy() {
-        if (!buildId) {
-            toast.error("No active deployment to pause");
-            return;
-        }
-
+        if (!buildId) return;
         try {
-            await axios.post(
-                `${import.meta.env.VITE_API_URL}/api/deploy/pause/${buildId}`,
-                {},
-                {
-                    withCredentials: true,
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-                    },
-                }
-            );
-            toast.success("Pipeline paused");
-            setIsPaused(true);
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/deploy/pause/${buildId}`, {}, {
+                withCredentials: true,
+                headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
+            });
+            if (activeToastId) toast.info("Pipeline mis en pause", { id: activeToastId });
         } catch (error: any) {
-            const message = error.response?.data?.error || "Failed to pause pipeline";
-            toast.error(message);
+            toast.error("Erreur pause");
         }
     }
 
     async function resumeDeploy() {
-        if (!buildId) {
-            toast.error("No active deployment to resume");
-            return;
-        }
-
+        if (!buildId) return;
         try {
-            await axios.post(
-                `${import.meta.env.VITE_API_URL}/api/deploy/resume/${buildId}`,
-                {},
-                {
-                    withCredentials: true,
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-                    },
-                }
-            );
-            toast.success("Pipeline resumed");
-            setIsPaused(false);
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/deploy/resume/${buildId}`, {}, {
+                withCredentials: true,
+                headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
+            });
+            if (activeToastId) toast.loading("Reprise du déploiement...", { id: activeToastId });
         } catch (error: any) {
-            const message = error.response?.data?.error || "Failed to resume pipeline";
-            toast.error(message);
+            toast.error("Erreur reprise");
         }
     }
 
@@ -202,7 +173,7 @@ export const PipelineView = () => {
                     <Button
                         onClick={startDeploy}
                         disabled={loading}
-                        className="h-8 text-[9px] px-4 font-bold uppercase tracking-widest bg-primary text-primary-foreground hover:opacity-90 transition-all active:scale-95 shadow-[0_0_15px_rgba(var(--primary),0.2)]"
+                        className="h-8 text-[9px] px-4 font-bold uppercase tracking-widest bg-primary text-primary-foreground hover:opacity-90 transition-all active:scale-95"
                     >
                         {loading ? <Loader2 className="animate-spin h-3 w-3 mr-1" /> : <Play className="h-3 w-3 mr-1 fill-current" />}
                         {loading ? "Running..." : "Execute"}
@@ -213,7 +184,10 @@ export const PipelineView = () => {
                             <Button
                                 onClick={isPaused ? resumeDeploy : pauseDeploy}
                                 variant="outline"
-                                className="h-8 text-[9px] px-4 font-bold uppercase tracking-widest border-2 border-border hover:border-primary transition-colors"
+                                className={cn(
+                                    "h-8 text-[9px] px-4 font-bold uppercase tracking-widest border-2 transition-all",
+                                    isPaused ? "border-yellow-500 text-yellow-500 animate-pulse" : "border-border"
+                                )}
                             >
                                 {isPaused ? <Play className="h-3 w-3 mr-1" /> : <Pause className="h-3 w-3 mr-1" />}
                                 {isPaused ? "Resume" : "Pause"}
@@ -243,14 +217,14 @@ export const PipelineView = () => {
                                     <div className={cn(
                                         "absolute left-[13px] top-8 w-[1px] h-8 transition-colors duration-500",
                                         isDone ? "bg-primary" : "bg-muted"
-                                        )} />
+                                    )} />
                                 )}
                                 <div className={cn(
                                     "w-7 h-7 rounded-full flex items-center justify-center border-2 text-[10px] transition-all duration-500 z-10 bg-background font-black",
                                     isDone ? "bg-primary border-primary text-primary-foreground shadow-[0_0_10px_rgba(var(--primary),0.4)]" :
-                                    isCurrent ? "border-primary text-primary animate-pulse" :
-                                    "border-muted text-muted"
-                                    )}>
+                                        isCurrent ? "border-primary text-primary animate-pulse" :
+                                            "border-muted text-muted"
+                                )}>
                                     {isDone ? <CheckCircle className="w-4 h-4" /> : idx + 1}
                                 </div>
                                 <span className={cn(
@@ -275,7 +249,7 @@ export const PipelineView = () => {
                             "overflow-y-auto overflow-x-hidden border-2 border-border shadow-2xl transition-all",
                             "leading-relaxed whitespace-pre-wrap scrollbar-thin scrollbar-thumb-white/20",
                             loading && "border-primary/30"
-                            )}
+                        )}
                     >
                         {logs.map((log, i) => (
                             <div key={i} className="mb-1 border-l border-white/10 pl-3 break-words">
@@ -283,8 +257,7 @@ export const PipelineView = () => {
                                 {log}
                             </div>
                         ))}
-                        {loading && <div className="animate-pulse text-primary mt-1">_</div>}
-                        <div className="h-2" />
+                        {loading && !isPaused && <div className="animate-pulse text-primary mt-1">_</div>}
                     </div>
                 </div>
             </CardContent>

@@ -1,4 +1,10 @@
 {
+  "common": {
+    "confirm": "Confirmer",
+    "delete": "Supprimer",
+    "deleting": "Suppression en cours...",
+    "cancel": "Annuler"
+  },
   "navbar": {
     "home": "Accueil",
     "dashboard": "Tableau de bord",
@@ -149,6 +155,8 @@
         "redeploy_success": "Redéploiement lancé avec succès",
         "confirm_delete": "Voulez-vous vraiment supprimer ce build ?",
         "delete_success": "Build supprimé avec succès",
+        "delete_warning": "Cette action est irréversible et supprimera l'historique de ce déploiement.",
+        "confirm_redeploy": "Relancer le déploiement ?",
         "status_running": "En cours",
         "status_success": "Succès",
         "status_failed": "Échec",
