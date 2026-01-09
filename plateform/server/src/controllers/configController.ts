@@ -24,6 +24,7 @@ export const getConfig = async (req: Request, res: Response): Promise<void> => {
 
 export const updateConfig = async (req: Request, res: Response): Promise<void> => {
   const { config } = req.body;
+  const adminId = (req as any).user?._id || (req as any).user?.id;
 
   if (!config || typeof config !== "object") {
     res.status(400).json({ message: "Format de configuration invalide" });
@@ -34,24 +35,30 @@ export const updateConfig = async (req: Request, res: Response): Promise<void> =
     const keys = Object.keys(config);
 
     for (const key of keys) {
-      const value = config[key];
+      const newValue = config[key];
 
-      await Config.findOneAndUpdate(
-          { key },
-          { value },
-          { new: true, upsert: true }
-      );
+      const existingConfig = await Config.findOne({ key });
 
-      await createLog({
-        level: logLevels.INFO,
-        message: `Configuration mise à jour : ${key} -> ${value}`,
-        userId: (req as any).user?.uid || "System",
-      });
+      if (!existingConfig || existingConfig.value !== newValue) {
+
+        await Config.findOneAndUpdate(
+            { key },
+            { value: newValue },
+            { new: true, upsert: true }
+        );
+
+        const oldValText = existingConfig ? ` (ancien: ${existingConfig.value})` : "";
+
+        await createLog({
+          level: logLevels.INFO,
+          message: `Réglage [${key}] modifié : ${newValue}${oldValText}`,
+          userId: adminId,
+        });
+      }
     }
 
     res.json({ message: "Configuration mise à jour avec succès" });
   } catch (err: any) {
-    console.error("❌ Erreur updateConfig:", err.message);
     res.status(500).json({ error: "Erreur lors de la mise à jour" });
   }
 };

@@ -123,7 +123,7 @@ export const restartBuild = async (req: Request, res: Response): Promise<void> =
 
     const newBuild = await Build.create({
       projectName: originalBuild.projectName,
-      status: BuildStatus.PENDING,
+      status: BuildStatus.PAUSED,
       image: originalBuild.image,
       images: originalBuild.images,
       deploymentId: new mongoose.Types.ObjectId().toString(),
@@ -166,5 +166,33 @@ export const deleteBuild = async (req: Request, res: Response): Promise<void> =>
   } catch (error: any) {
     console.error("Erreur lors de la suppression du build:", error);
     res.status(500).json({ error: "Erreur lors de la suppression du build", details: error.message });
+  }
+};
+
+export const getBuildStats = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const stats = await Build.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]);
+
+    const counts: any = { SUCCESS: 0, FAILED: 0, RUNNING: 0, PAUSED: 0, total: 0 };
+
+    stats.forEach(item => {
+      const statusKey = item._id.toUpperCase()
+      if (counts.hasOwnProperty(statusKey)) {
+        counts[statusKey] = item.count;
+      }
+      counts.total += item.count;
+    });
+
+    const total = counts.total;
+
+    res.status(200).json({
+      total,
+      successRate: total > 0 ? Math.round((counts.SUCCESS / total) * 100) : 0,
+      failedRate: total > 0 ? Math.round((counts.FAILED / total) * 100) : 0,
+      runningRate: total > 0 ? Math.round((counts.RUNNING / total) * 100) : 0,
+      pausedRate: total > 0 ? Math.round((counts.PAUSED / total) * 100) : 0,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 };

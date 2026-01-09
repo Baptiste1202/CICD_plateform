@@ -102,7 +102,6 @@ export const PipelineView = () => {
             setStatus("success");
             setCurrentStepIndex(steps.length);
         } catch (error: any) {
-            console.error(error);
             const message = error.response?.data?.error || "Erreur de déploiement";
             toast.error(message, { id: toastId });
             setLogs((prev) => [...prev, `\n❌ ERREUR API : ${message}`]);
@@ -137,7 +136,6 @@ export const PipelineView = () => {
             setStatus("cancelled");
             setLoading(false);
         } catch (error: any) {
-            console.error(error);
             const message = error.response?.data?.error || "Failed to cancel pipeline";
             toast.error(message);
         }
@@ -163,7 +161,6 @@ export const PipelineView = () => {
             toast.success("Pipeline paused");
             setIsPaused(true);
         } catch (error: any) {
-            console.error(error);
             const message = error.response?.data?.error || "Failed to pause pipeline";
             toast.error(message);
         }
@@ -189,7 +186,6 @@ export const PipelineView = () => {
             toast.success("Pipeline resumed");
             setIsPaused(false);
         } catch (error: any) {
-            console.error(error);
             const message = error.response?.data?.error || "Failed to resume pipeline";
             toast.error(message);
         }
@@ -236,7 +232,6 @@ export const PipelineView = () => {
             </CardHeader>
 
             <CardContent className="p-2 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                {/* Visualisation des étapes */}
                 <div className="p-4 md:col-span-4 flex flex-col space-y-8 ">
                     {steps.map((step, idx) => {
                         const isDone = idx < currentStepIndex || status === "success";
@@ -269,7 +264,6 @@ export const PipelineView = () => {
                     })}
                 </div>
 
-                {/* Sortie Terminal */}
                 <div className="md:col-span-8 flex flex-col min-w-0">
                     <span className="text-[8px] font-black uppercase mb-2 opacity-50 italic shrink-0 flex items-center gap-2">
                         <Circle className="w-1.5 h-1.5 fill-primary animate-pulse" /> Live Terminal Output

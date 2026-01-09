@@ -10,7 +10,7 @@ const buildSchema = new Schema<IBuild>(
       type: String,
       enum: allowedBuildStatuses,
       required: true,
-      default: BuildStatus.PENDING,
+      default: BuildStatus.PAUSED,
     },
     image: { type: String, required: true },
     images: [{ type: String }],

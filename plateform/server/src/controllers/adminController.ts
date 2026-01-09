@@ -6,7 +6,7 @@ exports.getDashboardStats = async (req, res) => {
         const totalUsers = await User.countDocuments();
 
         const activeBuilds = await Build.countDocuments({
-            status: { $in: ['running', 'pending'] }
+            status: { $in: ['running', 'paused'] }
         });
 
         res.status(200).json({

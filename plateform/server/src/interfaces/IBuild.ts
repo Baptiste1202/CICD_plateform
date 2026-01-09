@@ -1,7 +1,6 @@
 import mongoose, { Document } from "mongoose";
 
 export enum BuildStatus {
-  PENDING = "pending",
   RUNNING = "running",
   PAUSED = "paused",
   SUCCESS = "success",

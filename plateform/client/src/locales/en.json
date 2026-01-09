@@ -175,7 +175,7 @@
         "created_at": "Created At",
         "actions": "Actions",
         "restart": "Restart",
-        "status_pending": "Pending",
+        "status_paused": "Paused",
         "status_running": "Running",
         "status_success": "Success",
         "status_failed": "Failed",

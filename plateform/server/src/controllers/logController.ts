@@ -24,13 +24,17 @@ export const getLogs = async (req: Request, res: Response): Promise<void> => {
 
 interface CreateLogParams {
   message: string;
-  userId: mongoose.Types.ObjectId;
+  userId: any;
   level: logLevels;
 }
 
 export const createLog = async ({ message, userId, level }: CreateLogParams): Promise<void> => {
   try {
-    await Log.create({ message, user: userId, level });
+    await Log.create({
+      message,
+      user: userId || null,
+      level
+    });
   } catch (err: any) {
   }
 };
@@ -40,6 +44,7 @@ export const deleteLog = async (req: Request, res: Response): Promise<void> => {
 
   try {
     const log = await Log.findByIdAndDelete(id);
+
     if (!log) {
       res.status(400).json({ error: "server.admin.errors.log_not_found" });
       return;

@@ -4,20 +4,42 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PipelineView } from "@/pages/Admin/components/pipeline/PipelineView";
 import { useSocketContext } from "@/contexts/socketContext";
 import { Activity, Users, LayoutDashboard, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export const Dashboard = () => {
     const { socket } = useSocketContext();
-    const [stats, setStats] = useState({ users: 0, activeBuilds: 0 });
+
+    // 1. Initialisation avec TOUTES les clés nécessaires
+    const [stats, setStats] = useState({
+        users: 0,
+        totalBuilds: 0,
+        successRate: 0,
+        failedRate: 0,
+        runningRate: 0,
+        pausedRate: 0
+    });
     const [loading, setLoading] = useState(true);
 
     const fetchStats = async () => {
         try {
-            const res = await axiosConfig.get("/users");
-            const usersCount = res.data.count ?? (Array.isArray(res.data.users) ? res.data.users.length : 0);
-            setStats({ users: usersCount, activeBuilds: 0 });
+            const [userRes, buildRes] = await Promise.all([
+                axiosConfig.get("/users"),
+                // On retire le fallback .rate ici pour utiliser les nouvelles clés
+                axiosConfig.get("/builds/stats")
+            ]);
+
+            const usersCount = userRes.data.count ?? (Array.isArray(userRes.data.users) ? userRes.data.users.length : 0);
+
+            // 2. Mapping précis des données reçues du Backend
+            setStats({
+                users: usersCount,
+                totalBuilds: buildRes.data.total || 0,
+                successRate: buildRes.data.successRate || 0,
+                failedRate: buildRes.data.failedRate || 0,
+                runningRate: buildRes.data.runningRate || 0,
+                pausedRate: buildRes.data.pausedRate || 0
+            });
         } catch (err: any) {
-            console.error(err);
+            console.error("Erreur fetchStats:", err);
         } finally {
             setLoading(false);
         }
@@ -29,16 +51,10 @@ export const Dashboard = () => {
 
     useEffect(() => {
         if (!socket) return;
-        socket.on("pipeline-update", (data: any) => {
-            if (data.index === 0) {
-                setStats(prev => ({ ...prev, activeBuilds: prev.activeBuilds + 1 }));
-            }
-        });
         socket.on("pipeline-finished", () => {
-            setStats(prev => ({ ...prev, activeBuilds: Math.max(0, prev.activeBuilds - 1) }));
+            fetchStats();
         });
         return () => {
-            socket.off("pipeline-update");
             socket.off("pipeline-finished");
         };
     }, [socket]);
@@ -52,66 +68,111 @@ export const Dashboard = () => {
     }
 
     return (
-        <div className="flex flex-col h-full max-h-screen overflow-hidden bg-background p-4 gap-4">
-            <div className="flex items-center justify-between border-b-2 border-border pb-2 shrink-0">
-                <div className="flex items-center gap-2">
-                    <LayoutDashboard className="w-5 h-5 text-primary" />
-                    <h1 className="text-3xl font-black uppercase tracking-tighter italic">
-                        Dashboard CI/CD
-                    </h1>
+        <div className="flex flex-1 flex-col gap-8 p-8 bg-background h-full overflow-hidden">
+            <div className="flex items-center justify-between border-b-2 border-border pb-6 shrink-0">
+                <div>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-3xl font-black uppercase tracking-tight italic">
+                            Dashboard CI/CD
+                        </h1>
+                        <LayoutDashboard className="w-6 h-6 text-primary" />
+                    </div>
+                    <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] mt-1">
+                        Performance globale et état des pipelines
+                    </p>
                 </div>
             </div>
 
-            <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 shrink-0">
-                <Card className="border-2 border-border shadow-none rounded-xl bg-card">
-                    <CardHeader className="p-3 pb-0 space-y-0 flex flex-row items-center justify-between">
-                        <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                            Utilisateurs Totaux
-                        </CardTitle>
-                        <Users className="w-3.5 h-3.5 opacity-50" />
-                    </CardHeader>
-                    <CardContent className="p-3 pt-1">
-                        <p className="text-2xl font-black">{stats.users}</p>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1 tracking-tight">
-                            Membres enregistrés
-                        </p>
-                    </CardContent>
-                </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1 min-h-0">
+                <div className="lg:col-span-4 flex flex-col gap-6 shrink-0">
+                    <Card className="border-2 border-border shadow-none rounded-xl bg-card overflow-hidden">
+                        <CardHeader className="p-4 pb-0 space-y-0 flex flex-row items-center justify-between">
+                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                Utilisateurs Totaux
+                            </CardTitle>
+                            <Users className="w-4 h-4 opacity-50" />
+                        </CardHeader>
+                        <CardContent className="p-4 pt-2">
+                            <p className="text-3xl font-black italic tracking-tighter">{stats.users}</p>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1 tracking-tight">
+                                Membres enregistrés
+                            </p>
+                        </CardContent>
+                    </Card>
 
-                <Card className={cn(
-                    "border-2 shadow-none rounded-xl transition-all duration-500",
-                    stats.activeBuilds > 0
-                        ? "bg-primary text-primary-foreground border-transparent shadow-[0_0_20px_rgba(var(--primary),0.3)]"
-                        : "bg-card border-border"
-                )}>
-                    <CardHeader className="p-3 pb-0 space-y-0 flex flex-row items-center justify-between">
-                        <CardTitle className={cn(
-                            "text-[9px] font-black uppercase tracking-widest",
-                            stats.activeBuilds > 0 ? "text-primary-foreground" : "text-muted-foreground"
-                        )}>
-                            Builds Actifs
-                        </CardTitle>
-                        <Activity className={cn(
-                            "w-3.5 h-3.5",
-                            stats.activeBuilds > 0 ? "animate-pulse" : "opacity-50"
-                        )} />
-                    </CardHeader>
-                    <CardContent className="p-3 pt-1">
-                        <div className="text-2xl font-black">{stats.activeBuilds}</div>
-                        <p className={cn(
-                            "text-[10px] font-bold uppercase mt-1 tracking-tight",
-                            stats.activeBuilds > 0 ? "text-primary-foreground/80" : "text-muted-foreground"
-                        )}>
-                            {stats.activeBuilds > 0 ? "Processus en cours" : "Aucune activité"}
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
+                    <Card className="border-2 border-border shadow-none rounded-xl bg-card overflow-hidden">
+                        <CardHeader className="p-4 pb-0 space-y-0 flex flex-row items-center justify-between">
+                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                Historique Builds
+                            </CardTitle>
+                            <Activity className="w-4 h-4 opacity-50" />
+                        </CardHeader>
+                        <CardContent className="p-4 pt-2">
+                            <p className="text-3xl font-black italic tracking-tighter">{stats.totalBuilds}</p>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1 tracking-tight">
+                                Exécutions totales
+                            </p>
+                        </CardContent>
+                    </Card>
 
-            {/* Zone Pipeline */}
-            <div className="flex-1 min-h-0 border-t-2 border-border pt-4 flex flex-col overflow-hidden">
-                <div className="flex-1 min-h-0 pb-2">
-                    <PipelineView />
+                    <Card className="border-2 border-border shadow-none rounded-xl bg-card overflow-hidden">
+                        <CardHeader className="p-4 pb-0 flex flex-row items-center justify-between">
+                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                État des Pipelines (%)
+                            </CardTitle>
+                            <Activity className="w-4 h-4 opacity-50" />
+                        </CardHeader>
+                        <CardContent className="p-4 pt-4 space-y-4">
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-[10px] font-black uppercase">
+                                    <span className="text-green-500">Succès</span>
+                                    <span>{stats.successRate}%</span>
+                                </div>
+                                <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
+                                    <div className="bg-green-500 h-full transition-all duration-1000" style={{ width: `${stats.successRate}%` }} />
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-[10px] font-black uppercase">
+                                    <span className="text-red-500">Échecs</span>
+                                    <span>{stats.failedRate}%</span>
+                                </div>
+                                <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
+                                    <div className="bg-red-500 h-full transition-all duration-1000" style={{ width: `${stats.failedRate}%` }} />
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-[10px] font-black uppercase">
+                                    <span className="text-blue-500">En cours</span>
+                                    <span>{stats.runningRate}%</span>
+                                </div>
+                                <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
+                                    <div className="bg-blue-500 h-full transition-all duration-1000" style={{ width: `${stats.runningRate}%` }} />
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-[10px] font-black uppercase">
+                                    <span className="text-amber-500">En attente</span>
+                                    <span>{stats.pausedRate}%</span>
+                                </div>
+                                <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
+                                    <div className="bg-amber-500 h-full transition-all duration-1000" style={{ width: `${stats.pausedRate}%` }} />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="lg:col-span-8 flex flex-col gap-4 min-h-0">
+                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground italic shrink-0">
+                        Live Pipelines
+                    </h2>
+                    <div className="flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar">
+                        <PipelineView />
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,8 +1,18 @@
 import { Router } from "express";
-import { createBuild, getBuilds, getBuildById, updateBuildStatus, restartBuild, deleteBuild } from "../controllers/buildController.js";
+import {
+    createBuild,
+    getBuilds,
+    getBuildById,
+    updateBuildStatus,
+    restartBuild,
+    deleteBuild,
+    getBuildStats
+} from "../controllers/buildController.js";
 import { verifyToken } from "../middlewares/verifyToken.js";
 
 const router = Router();
+
+router.get("/stats", verifyToken({ role: "admin" }), getBuildStats);
 
 router.get("/", verifyToken({ role: "user" }), getBuilds);
 router.get("/:id", verifyToken({ role: "user" }), getBuildById);

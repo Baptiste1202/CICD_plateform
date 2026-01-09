@@ -21,13 +21,29 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
   const requestUser = (req as any).user;
 
   try {
-    const updatePayload = requestUser.role === 'admin' ? req.body : otherData;
-
-    const user = await User.findByIdAndUpdate(id, updatePayload, { new: true });
-    if (!user) {
+    const oldUser = await User.findById(id);
+    if (!oldUser) {
       res.status(404).json({ error: "Utilisateur non trouvé" });
       return;
     }
+
+    const updatePayload = requestUser.role === 'admin' ? req.body : otherData;
+    const user = await User.findByIdAndUpdate(id, updatePayload, { new: true });
+
+    if (user) {
+      let changes = [];
+      if (oldUser.username !== user.username) changes.push(`pseudo (${oldUser.username} -> ${user.username})`);
+      if (oldUser.role !== user.role) changes.push(`rôle (${oldUser.role} -> ${user.role})`);
+
+      if (changes.length > 0) {
+        await createLog({
+          message: `Modification de l'utilisateur ${user.username} : ${changes.join(', ')}`,
+          userId: requestUser._id || requestUser.id,
+          level: logLevels.INFO
+        });
+      }
+    }
+
     res.status(200).json({ user, message: "Profil mis à jour" });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

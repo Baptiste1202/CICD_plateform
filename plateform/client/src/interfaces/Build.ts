@@ -1,6 +1,6 @@
 import { UserInterface } from "@/interfaces/User";
 
-export type BuildStatus = 'pending' | 'running' | 'success' | 'failed';
+export type BuildStatus = 'paused' | 'running' | 'success' | 'failed';
 
 export interface BuildInterface {
     _id: string;
