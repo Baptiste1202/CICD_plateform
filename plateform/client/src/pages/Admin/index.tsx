@@ -20,7 +20,7 @@ export const Index = () => {
                                 to="/dashboard"
                                 className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors"
                             >
-                                {t("pages.admin.dashboard") || "DASHBOARD"}
+                                {t("pages.admin.dashboard_menu") || "DASHBOARD"}
                             </Link>
                         </BreadcrumbItem>
 

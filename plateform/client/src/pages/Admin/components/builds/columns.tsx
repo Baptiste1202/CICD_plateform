@@ -97,7 +97,7 @@ export const getColumns = (t: TFunction<"translation">, callback: (action: strin
                     </Badge>
                     {isDeployed && (
                         <Badge className="rounded-md px-2 py-0.5 uppercase text-[10px] tracking-widest bg-success text-success-foreground border-none font-black">
-                            {t("PAGES.ADMIN.BUILD_PAGE.DEPLOYED")}
+                            {t("pages.admin.build_page.deployed")}
                         </Badge>
                     )}
                 </div>

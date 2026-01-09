@@ -79,7 +79,7 @@ export const Builds = () => {
               <Hammer className="w-6 h-6 text-primary" />
             </div>
             <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] mt-1">
-              {t("pages.admin.build_page.subtitle") || "Manage your project deployments"}
+              {t("pages.admin.build_page.subtitle")}
             </p>
           </div>
         </div>

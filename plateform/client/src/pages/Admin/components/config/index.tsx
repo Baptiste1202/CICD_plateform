@@ -51,7 +51,7 @@ export const Config = () => {
             updateConfigValues(values);
             toast.success(t(`server.admin.messages.${response.data.message}`));
         } catch (error: any) {
-            toast.error(t(error.response?.data?.error || "Error"));
+            toast.error(t(error.response?.data?.error));
         }
     };
 

@@ -22,7 +22,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }, [getConfigValue]);
 
     const adminMenus = [
-        { title: t("pages.admin.dashboard").toUpperCase(), icon: LayoutDashboard, url: "/dashboard" },
+        { title: t("pages.admin.dashboard_menu").toUpperCase(), icon: LayoutDashboard, url: "/dashboard" },
         { title: t("pages.admin.users").toUpperCase(), icon: UsersIcon, url: "/users" },
         { title: t("pages.admin.logs").toUpperCase(), icon: NotebookText, url: "/logs" },
         { title: t("pages.admin.builds").toUpperCase(), icon: Hammer, url: "/builds" },
@@ -30,7 +30,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ];
 
     const userMenus = [
-        { title: t("pages.admin.dashboard").toUpperCase(), icon: LayoutDashboard, url: "/dashboard" },
+        { title: t("pages.admin.dashboard_menu").toUpperCase(), icon: LayoutDashboard, url: "/dashboard" },
         { title: t("pages.admin.logs").toUpperCase(), icon: NotebookText, url: "/logs" },
         { title: t("navbar.account").toUpperCase(), icon: User, url: "/account" },
     ];

@@ -5,16 +5,19 @@ import { getColumns } from "./columns";
 import { DataTable } from "@/components/customs/dataTable";
 import { useTranslation } from "react-i18next";
 import { useAuthContext } from "@/contexts/authContext";
-import {NotebookText} from "lucide-react";
+import { NotebookText } from "lucide-react";
 
 export const Logs = () => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
+
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+
   const { authUser } = useAuthContext();
   const { t } = useTranslation();
 
-  async function fetchData(page: number = 0, size: number = 10) {
+  async function fetchData(page: number = pagination.pageIndex, size: number = pagination.pageSize) {
     setLoading(true);
     try {
       const requests = [];
@@ -41,7 +44,6 @@ export const Logs = () => {
       }));
 
       let mergedData = [...typedLogs, ...typedBuilds];
-
       mergedData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
       if (authUser?.role !== 'admin') {
@@ -99,6 +101,9 @@ export const Logs = () => {
               callback={callback}
               searchElement="message"
               actions={authUser?.role === 'admin' ? ["deleteAll"] : []}
+              pageIndex={pagination.pageIndex}
+              pageSize={pagination.pageSize}
+              onPaginationChange={setPagination}
           />
         </div>
       </div>

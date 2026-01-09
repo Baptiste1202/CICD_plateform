@@ -3,12 +3,11 @@ import { axiosConfig } from "@/config/axiosConfig";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PipelineView } from "@/pages/Admin/components/pipeline/PipelineView";
 import { useSocketContext } from "@/contexts/socketContext";
-import { Activity, Users, LayoutDashboard, Loader2 } from "lucide-react";
+import {Activity, Users, LayoutDashboard, Loader2, History} from "lucide-react";
 
 export const Dashboard = () => {
     const { socket } = useSocketContext();
 
-    // 1. Initialisation avec TOUTES les clés nécessaires
     const [stats, setStats] = useState({
         users: 0,
         totalBuilds: 0,
@@ -23,13 +22,11 @@ export const Dashboard = () => {
         try {
             const [userRes, buildRes] = await Promise.all([
                 axiosConfig.get("/users"),
-                // On retire le fallback .rate ici pour utiliser les nouvelles clés
                 axiosConfig.get("/builds/stats")
             ]);
 
             const usersCount = userRes.data.count ?? (Array.isArray(userRes.data.users) ? userRes.data.users.length : 0);
 
-            // 2. Mapping précis des données reçues du Backend
             setStats({
                 users: usersCount,
                 totalBuilds: buildRes.data.total || 0,
@@ -106,7 +103,7 @@ export const Dashboard = () => {
                             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                                 Historique Builds
                             </CardTitle>
-                            <Activity className="w-4 h-4 opacity-50" />
+                            <History className="w-4 h-4 opacity-50" />
                         </CardHeader>
                         <CardContent className="p-4 pt-2">
                             <p className="text-3xl font-black italic tracking-tighter">{stats.totalBuilds}</p>
