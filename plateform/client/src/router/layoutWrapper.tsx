@@ -28,7 +28,6 @@ export const LayoutWrapper = ({ withLayout = true }: LayoutWrapperProps) => {
             <SidebarInset className="bg-background">
                 <header className="flex h-16 shrink-0 items-center gap-2 border-b-2 border-border px-6 bg-background/80 backdrop-blur-md sticky top-0 z-50 transition-all group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-14">
                     <div className="flex items-center gap-4 w-full">
-                        {/* Trigger avec effet de survol primary */}
                         <SidebarTrigger className="-ml-1 hover:text-primary transition-colors duration-300" />
 
                         <Separator orientation="vertical" className="h-4 bg-border w-[2px]" />

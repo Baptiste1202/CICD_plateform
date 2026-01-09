@@ -1,12 +1,12 @@
 import * as React from "react";
-import { NotebookText, Presentation, Settings, UsersIcon, Cog, LayoutDashboard, Box } from "lucide-react";
+import {NotebookText, UsersIcon, Cog, LayoutDashboard, Box, User, Settings, Hammer} from "lucide-react";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { useAuthContext } from "@/contexts/authContext";
 import { useNavigate } from "react-router-dom";
-import { LanguageChanger } from "@/components/Navbar/languageChanger";
-import { ThemeChanger } from "@/components/Navbar/themeChanger";
+import { LanguageChanger } from "@/components/Sidebar/languageChanger";
+import { ThemeChanger } from "@/components/Sidebar/themeChanger";
 import { useTranslation } from "react-i18next";
 import { useConfigContext } from "@/contexts/configContext";
 
@@ -22,17 +22,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }, [getConfigValue]);
 
     const adminMenus = [
-        { title: t("pages.admin.dashboard").toUpperCase(), icon: Presentation, url: "/dashboard" },
+        { title: t("pages.admin.dashboard").toUpperCase(), icon: LayoutDashboard, url: "/dashboard" },
         { title: t("pages.admin.users").toUpperCase(), icon: UsersIcon, url: "/users" },
         { title: t("pages.admin.logs").toUpperCase(), icon: NotebookText, url: "/logs" },
-        { title: t("pages.admin.builds").toUpperCase(), icon: Cog, url: "/builds" },
+        { title: t("pages.admin.builds").toUpperCase(), icon: Hammer, url: "/builds" },
         { title: t("pages.admin.settings").toUpperCase(), icon: Settings, url: "/settings" },
     ];
 
     const userMenus = [
         { title: t("pages.admin.dashboard").toUpperCase(), icon: LayoutDashboard, url: "/dashboard" },
         { title: t("pages.admin.logs").toUpperCase(), icon: NotebookText, url: "/logs" },
-        { title: t("navbar.account").toUpperCase(), icon: Settings, url: "/account" },
+        { title: t("navbar.account").toUpperCase(), icon: User, url: "/account" },
     ];
 
     const menuToDisplay = authUser?.role === "admin" ? adminMenus : userMenus;
@@ -41,7 +41,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <Sidebar collapsible="icon" className="border-r-2 border-border shadow-none" {...props}>
             <SidebarHeader
                 className="border-b-2 border-border h-16 flex items-center justify-center cursor-pointer hover:bg-muted/30 transition-all duration-300"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/dashboard")}
             >
                 <div className="flex items-center gap-3 px-2 group-data-[collapsible=icon]:justify-center">
                     <div className="bg-primary text-primary-foreground p-1.5 rounded-lg border-2 border-primary shadow-[0_0_10px_rgba(var(--primary),0.3)] transition-all duration-500">

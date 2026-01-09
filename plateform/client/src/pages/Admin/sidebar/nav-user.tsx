@@ -1,4 +1,4 @@
-import { ChevronRight, House, LogOut, User, Wrench } from "lucide-react";
+import {ChevronRight, LogOut, User, LayoutDashboard} from "lucide-react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -79,9 +79,8 @@ export function NavUser({ user }: { user: UserInterface | null }) {
 
               <DropdownMenuGroup className="space-y-1">
                 {[
-                  { icon: House, label: t("navbar.home"), path: "/" },
+                  { icon: LayoutDashboard, label: t("navbar.dashboard"), path: "/dashboard" },
                   { icon: User, label: t("navbar.account"), path: "/account" },
-                  { icon: Wrench, label: t("navbar.dashboard"), path: "/admin/dashboard" },
                 ].map((item) => (
                     <DropdownMenuItem
                         key={item.path}

@@ -46,20 +46,16 @@ export const Builds = () => {
 
   async function handleDelete(build: any) {
     if (!confirm(t("pages.admin.build_page.confirm_delete"))) return;
-
     try {
       await axiosConfig.delete(`/builds/${build._id}`);
       toast.success(t("pages.admin.build_page.delete_success"));
 
-      // Calcul : si on supprime le dernier élément de la page 3, on doit passer à la page 2
       const isLastItemOnPage = builds.length === 1 && pagination.pageIndex > 0;
       const newPage = isLastItemOnPage ? pagination.pageIndex - 1 : pagination.pageIndex;
 
-      // 1. On met à jour l'objet de pagination immédiatement
       const updatedPagination = { ...pagination, pageIndex: newPage };
       setPagination(updatedPagination);
 
-      // 2. On appelle le fetch avec ces valeurs exactes
       fetchAllBuilds(updatedPagination.pageIndex, updatedPagination.pageSize, searchTerm);
 
     } catch (error: any) {

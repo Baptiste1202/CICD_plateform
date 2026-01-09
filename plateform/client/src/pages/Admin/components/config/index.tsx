@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { axiosConfig } from "@/config/axiosConfig";
 import { toast } from "sonner";
 import { useConfigContext } from "@/contexts/configContext";
@@ -11,6 +10,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useTranslation } from "react-i18next";
 import { Loading } from "@/components/customs/loading";
 import ColorPicker from "@/components/customs/forms/colorPicker";
+import {Settings} from "lucide-react";
 
 const configurationFormSchema = z.object({
     APP_NAME: z.string().trim(),
@@ -58,17 +58,23 @@ export const Config = () => {
     if (isLoading) return <Loading />;
 
     return (
-        <div className="container px-4 mx-auto py-8">
-            <Card className="p-8 rounded-2xl border-2 border-border bg-card shadow-none">
-                <div className="mb-8 border-b-2 border-border pb-6">
-                    <CardTitle className="text-3xl font-black uppercase tracking-tight italic">
-                        {t("pages.admin.config_page.title")}
-                    </CardTitle>
-                    <CardDescription className="mt-2 text-muted-foreground font-medium uppercase text-[10px] tracking-[0.2em]">
-                        {t("pages.admin.config_page.description")}
-                    </CardDescription>
-                </div>
+        <div className="flex flex-1 flex-col gap-8 p-8 bg-background">
 
+            <div className="flex items-center justify-between border-b-2 border-border pb-6">
+                <div>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-3xl font-black uppercase tracking-tight italic">
+                            {t("pages.admin.config_page.title")}
+                        </h1>
+                        <Settings className="w-6 h-6 text-primary" />
+                    </div>
+                    <p className="mt-1 text-muted-foreground font-black uppercase text-[10px] tracking-[0.2em]">
+                        {t("pages.admin.config_page.description")}
+                    </p>
+                </div>
+            </div>
+
+            <div className="rounded-xl border-2 border-border bg-card p-8 shadow-none max-w-4xl">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
 
@@ -77,14 +83,13 @@ export const Config = () => {
                             name="APP_NAME"
                             render={({ field }) => (
                                 <FormItem className="space-y-4">
-                                    <FormLabel className="text-xs font-black uppercase tracking-widest">
-                                        {t("pages.admin.config_page.app_name") || "Nom de l'application"}
+                                    <FormLabel className="text-xs font-black uppercase tracking-widest text-primary">
+                                        {t("pages.admin.config_page.app_name")}
                                     </FormLabel>
                                     <FormControl>
                                         <input
                                             {...field}
                                             className="flex h-12 w-full rounded-xl border-2 border-border bg-background px-4 py-2 text-sm font-bold shadow-none transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent"
-                                            placeholder="Ex: MY CUSTOM CI/CD"
                                         />
                                     </FormControl>
                                     <FormMessage className="font-bold text-destructive" />
@@ -97,7 +102,7 @@ export const Config = () => {
                             name="ACCENT_COLOR"
                             render={({ field }) => (
                                 <FormItem className="space-y-4">
-                                    <FormLabel className="text-xs font-black uppercase tracking-widest">
+                                    <FormLabel className="text-xs font-black uppercase tracking-widest text-primary">
                                         {t("pages.admin.config_page.accent_color")}
                                     </FormLabel>
                                     <FormControl>
@@ -113,17 +118,17 @@ export const Config = () => {
                             )}
                         />
 
-                        <div className="pt-4 border-t border-border/50">
+                        <div className="pt-6 border-t border-border">
                             <Button
                                 type="submit"
-                                className="w-full sm:w-auto h-12 px-10 rounded-xl bg-primary text-primary-foreground hover:opacity-90 font-black uppercase tracking-[0.2em] text-[11px] transition-all active:scale-95 shadow-[0_5px_15px_rgba(var(--primary),0.2)]"
+                                className="w-full sm:w-auto h-12 px-10 rounded-xl bg-primary text-primary-foreground font-black uppercase tracking-[0.2em] text-[11px] transition-all active:scale-95 shadow-[0_5px_15px_rgba(var(--primary),0.3)]"
                             >
                                 {t("global.buttons.save")}
                             </Button>
                         </div>
                     </form>
                 </Form>
-            </Card>
+            </div>
         </div>
     );
 };

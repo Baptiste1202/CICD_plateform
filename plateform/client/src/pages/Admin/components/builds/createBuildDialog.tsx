@@ -55,7 +55,6 @@ export const CreateBuildDialog = ({ open, onOpenChange, onCreate }: CreateBuildD
                     id="projectName"
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
-                    // CHANGEMENT : ring-primary au lieu de ring-foreground
                     className="col-span-3 rounded-xl border-2 border-border focus-visible:ring-primary focus-visible:border-transparent transition-all font-bold"
                     placeholder={t("pages.admin.build_page.project_name_placeholder") || "Project X"}
                     required
@@ -69,7 +68,6 @@ export const CreateBuildDialog = ({ open, onOpenChange, onCreate }: CreateBuildD
                     id="image"
                     value={image}
                     onChange={(e) => setImage(e.target.value)}
-                    // CHANGEMENT : ring-primary
                     className="col-span-3 rounded-xl border-2 border-border focus-visible:ring-primary focus-visible:border-transparent transition-all font-mono text-xs"
                     placeholder="e.g., node:18-alpine"
                     required
@@ -80,7 +78,6 @@ export const CreateBuildDialog = ({ open, onOpenChange, onCreate }: CreateBuildD
             <DialogFooter className="pt-4 border-t border-border">
               <Button
                   type="submit"
-                  // CHANGEMENT : bg-primary et text-primary-foreground
                   className="w-full sm:w-auto bg-primary text-primary-foreground hover:opacity-90 font-black uppercase tracking-widest px-8 rounded-xl h-12 transition-all active:scale-95 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
               >
                 {t("global.buttons.save")}

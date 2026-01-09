@@ -69,6 +69,7 @@ export const Dashboard = () => {
 
     return (
         <div className="flex flex-1 flex-col gap-8 p-8 bg-background h-full overflow-hidden">
+
             <div className="flex items-center justify-between border-b-2 border-border pb-6 shrink-0">
                 <div>
                     <div className="flex items-center gap-3">
@@ -78,7 +79,7 @@ export const Dashboard = () => {
                         <LayoutDashboard className="w-6 h-6 text-primary" />
                     </div>
                     <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] mt-1">
-                        Performance globale et état des pipelines
+                        Real-time system performance and pipeline status
                     </p>
                 </div>
             </div>
